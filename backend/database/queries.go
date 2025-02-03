@@ -31,6 +31,41 @@ func CreateComment(comment models.Comment) error {
 	return err
 }
 
+// Get comments for a post
+func GetCommentsByPostID(postID int) ([]models.Comment, error) {
+	query := `
+		SELECT 
+			c.id, c.user_id, u.username, c.content, c.created_at
+		FROM comments c
+		JOIN users u ON c.user_id = u.id
+		WHERE c.post_id = ?
+		ORDER BY c.created_at ASC`
+
+	rows, err := DB.Query(query, postID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var comments []models.Comment
+	for rows.Next() {
+		var comment models.Comment
+		err := rows.Scan(
+			&comment.ID,
+			&comment.UserID,
+			&comment.Username,
+			&comment.Content,
+			&comment.CreatedAt,
+		)
+		if err != nil {
+			return nil, err
+		}
+		comments = append(comments, comment)
+	}
+
+	return comments, nil
+}
+
 // Insert a like/dislike
 func CreateLikeDislike(like models.LikeDislike) error {
 	// First check if user already liked/disliked
@@ -95,6 +130,30 @@ func GetCategories() ([]models.Category, error) {
 	for rows.Next() {
 		var category models.Category
 		if err := rows.Scan(&category.ID, &category.Name); err != nil {
+			return nil, err
+		}
+		categories = append(categories, category)
+	}
+	return categories, nil
+}
+// Get categories for a post
+func GetCategoriesByPostID(postID int) ([]models.Category, error) {
+	rows, err := DB.Query(`
+		SELECT c.id, c.name 
+		FROM categories c
+		JOIN post_categories pc ON c.id = pc.category_id
+		WHERE pc.post_id = ?
+	`, postID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var categories []models.Category
+	for rows.Next() {
+		var category models.Category
+		err := rows.Scan(&category.ID, &category.Name)
+		if err != nil {
 			return nil, err
 		}
 		categories = append(categories, category)
