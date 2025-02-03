@@ -26,6 +26,52 @@ func CreatePost(post models.Post) error {
 	return err
 }
 
+// Get all posts
+func GetAllPosts() ([]models.Post, error) {
+	query := `
+		SELECT 
+			p.id, p.user_id, u.username, p.title, p.content, p.created_at
+		FROM posts p
+		JOIN users u ON p.user_id = u.id
+		ORDER BY p.created_at DESC`
+
+	rows, err := DB.Query(query)
+	if err != nil {
+		return nil, fmt.Errorf("error querying posts: %v", err)
+	}
+	defer rows.Close()
+
+	var posts []models.Post
+	for rows.Next() {
+		var post models.Post
+		err := rows.Scan(
+			&post.ID,
+			&post.UserID,
+			&post.Username,
+			&post.Title,
+			&post.Content,
+			&post.CreatedAt,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("error scanning post: %v", err)
+		}
+
+		// Get categories for each post
+		categories, err := GetCategoriesByPostID(post.ID)
+		if err == nil {
+			post.Categories = categories
+		}
+
+		posts = append(posts, post)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("error iterating posts: %v", err)
+	}
+
+	return posts, nil
+}
+
 // Insert a new comment
 func CreateComment(comment models.Comment) error {
 	_, err := DB.Exec("INSERT INTO comments (user_id, post_id, content) VALUES (?, ?, ?)", comment.UserID, comment.PostID, comment.Content)
