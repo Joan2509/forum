@@ -2,6 +2,7 @@ package database
 
 import (
 	"database/sql"
+	"fmt"
 
 	"forum/backend/models"
 )
@@ -118,6 +119,25 @@ func GetLikesDislikes(postID int) ([]models.LikeDislike, error) {
 	return likes, nil
 }
 
+func GetLikedPosts(userID int) ([]models.Post, error) {
+	query := `
+		SELECT DISTINCT
+			p.id, p.user_id, u.username, p.title, p.content, p.created_at
+		FROM posts p
+		JOIN users u ON p.user_id = u.id
+		JOIN likes l ON p.id = l.post_id
+		WHERE l.user_id = ? AND l.is_like = 1
+		ORDER BY p.created_at DESC`
+
+	rows, err := DB.Query(query, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	return scanPosts(rows)
+}
+
 // Get all categories
 func GetCategories() ([]models.Category, error) {
 	rows, err := DB.Query("SELECT id, name FROM categories ORDER BY name")
@@ -136,6 +156,7 @@ func GetCategories() ([]models.Category, error) {
 	}
 	return categories, nil
 }
+
 // Get categories for a post
 func GetCategoriesByPostID(postID int) ([]models.Category, error) {
 	rows, err := DB.Query(`
@@ -159,4 +180,55 @@ func GetCategoriesByPostID(postID int) ([]models.Category, error) {
 		categories = append(categories, category)
 	}
 	return categories, nil
+}
+
+func GetPostsByCategory(categoryID string) ([]models.Post, error) {
+	query := `
+		SELECT DISTINCT
+			p.id, p.user_id, u.username, p.title, p.content, p.created_at
+		FROM posts p
+		JOIN users u ON p.user_id = u.id
+		JOIN post_categories pc ON p.id = pc.post_id
+		WHERE pc.category_id = ?
+		ORDER BY p.created_at DESC`
+
+	rows, err := DB.Query(query, categoryID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	posts, err := scanPosts(rows)
+	if len(posts) == 0 {
+		return nil, sql.ErrNoRows
+	}
+	return posts, err
+}
+
+// Helper function to scan posts from rows
+func scanPosts(rows *sql.Rows) ([]models.Post, error) {
+	var posts []models.Post
+	for rows.Next() {
+		var post models.Post
+		err := rows.Scan(
+			&post.ID,
+			&post.UserID,
+			&post.Username,
+			&post.Title,
+			&post.Content,
+			&post.CreatedAt,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("error scanning post: %v", err)
+		}
+
+		// Get categories for each post
+		categories, err := GetCategoriesByPostID(post.ID)
+		if err == nil {
+			post.Categories = categories
+		}
+
+		posts = append(posts, post)
+	}
+	return posts, nil
 }
