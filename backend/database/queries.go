@@ -72,6 +72,24 @@ func GetAllPosts() ([]models.Post, error) {
 	return posts, nil
 }
 
+func GetUserPosts(userID int) ([]models.Post, error) {
+	query := `
+		SELECT DISTINCT
+			p.id, p.user_id, u.username, p.title, p.content, p.created_at
+		FROM posts p
+		JOIN users u ON p.user_id = u.id
+		WHERE p.user_id = ?
+		ORDER BY p.created_at DESC`
+
+	rows, err := DB.Query(query, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	return scanPosts(rows)
+}
+
 // Insert a new comment
 func CreateComment(comment models.Comment) error {
 	_, err := DB.Exec("INSERT INTO comments (user_id, post_id, content) VALUES (?, ?, ?)", comment.UserID, comment.PostID, comment.Content)
