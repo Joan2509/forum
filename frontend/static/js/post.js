@@ -43,3 +43,8 @@ async function openCreatePostModal() {
         handleError('Please login to create a post');
     }
 }
+
+function closeCreatePostModal() {
+    document.getElementById('createPostModal').classList.remove('active');
+    document.getElementById('createPostForm').reset();
+}
