@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"time"
 
-	"forum/database"
+	"forum/backend/database"
 
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"

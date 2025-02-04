@@ -10,7 +10,7 @@ import (
 	"forum/backend/models"
 )
 
-func CreatePost(w http.ResponseWriter, r *http.Request) {
+func CreatePostHandler(w http.ResponseWriter, r *http.Request) {
 	userId, ok := middleware.GetUserID(r)
 	if !ok {
 		http.Error(w, "Unauthorized: No user ID", http.StatusUnauthorized)
