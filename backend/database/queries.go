@@ -100,7 +100,9 @@ func CreateComment(comment models.Comment) error {
 func GetCommentsByPostID(postID int) ([]models.Comment, error) {
 	query := `
 		SELECT 
-			c.id, c.user_id, u.username, c.content, c.created_at
+			c.id, c.user_id, u.username, c.content, c.created_at,
+			(SELECT COUNT(*) FROM comment_likes WHERE comment_id = c.id AND is_like = 1) as likes,
+			(SELECT COUNT(*) FROM comment_likes WHERE comment_id = c.id AND is_like = 0) as dislikes
 		FROM comments c
 		JOIN users u ON c.user_id = u.id
 		WHERE c.post_id = ?
@@ -121,6 +123,8 @@ func GetCommentsByPostID(postID int) ([]models.Comment, error) {
 			&comment.Username,
 			&comment.Content,
 			&comment.CreatedAt,
+			&comment.Likes,
+			&comment.Dislikes,
 		)
 		if err != nil {
 			return nil, err
