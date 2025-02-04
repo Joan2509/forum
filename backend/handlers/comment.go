@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"forum/database"
-	"forum/models"
+	"forum/backend/database"
+	"forum/backend/models"
 )
 
 func CreateCommentHandler(w http.ResponseWriter, r *http.Request) {
