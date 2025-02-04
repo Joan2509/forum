@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Forum</title>
+	<link rel="stylesheet" href="/static/styles.css">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="/static/script.js" defer></script>
+</head>
+<body>
+	<header>
+		<nav>
+			<div class="nav-left">
+				<a href="/" class="logo">
+					<i class="fas fa-comments"></i>
+					Forum
+				</a>
+			</div>
+			<div class="nav-center">
+				<div class="search-bar">
+					<i class="fas fa-search"></i>
+					<input type="text" placeholder="Search...">
+				</div>
+			</div>
+			<div class="nav-right">
+				<button class="search-btn">
+					<i class="fas fa-search"></i>
+					Search
+				</button>
+				<div id="auth-buttons">
+					<button onclick="openAuthModal('login')" class="auth-btn">Login</button>
+					<button onclick="openAuthModal('register')" class="auth-btn">Register</button>
+				</div>
+			</div>
+		</nav>
+	</header>
+
+	<main>
+		<aside class="sidebar-left">
+			<div class="categories-section">
+				<h3>Categories</h3>
+				<div id="categoryFilter" class="category-list">
+					<!-- Categories will be loaded here as buttons -->
+				</div>
+			</div>
+			<div class="user-filters" id="userFilters">
+				<h3>Filters</h3>
+				<button onclick="applyFilters('my-posts')" class="filter-btn">
+					<i class="fas fa-user"></i> My Posts
+				</button>
+				<button onclick="applyFilters('liked-posts')" class="filter-btn">
+					<i class="fas fa-heart"></i> Liked Posts
+				</button>
+				<button onclick="applyFilters()" class="filter-btn">
+					<i class="fas fa-globe"></i> All Posts
+				</button>
+			</div>
+		</aside>
+
+		<section class="main-content">
+			<div class="content-header">
+				<h2>Recent Posts</h2>
+				<div class="sort-options">
+					<select onchange="sortPosts(this.value)">
+						<option value="recent">Most Recent</option>
+						<option value="popular">Most Popular</option>
+						<option value="commented">Most Commented</option>
+					</select>
+				</div>
+			</div>
+			<div id="posts-list">
+				<!-- Posts will be loaded here -->
+			</div>
+		</section>
+
+		<aside class="sidebar-right">
+			<button onclick="openCreatePostModal()" class="create-post-btn">
+				<i class="fas fa-plus"></i> Create Post
+			</button>
+			<div class="trending-section">
+				<h3>Trending Topics</h3>
+				<!-- Trending topics will be loaded here -->
+			</div>
+			<div class="online-users">
+				<h3>Online Users</h3>
+				<!-- Online users will be loaded here -->
+			</div>
+		</aside>
+	</main>
+
+	<div id="toast-container"></div>
+
+	<div class="modal-overlay" id="authModal">
+		<div class="modal">
+			<div class="modal-header">
+				<h3 id="modalTitle">Login</h3>
+				<button class="modal-close" onclick="closeAuthModal()">&times;</button>
+			</div>
+			<div class="modal-body">
+				<form id="authForm" onsubmit="handleAuth(event)">
+					<div class="form-group">
+						<label for="email">Email</label>
+						<input type="email" id="email" required>
+					</div>
+					<div class="form-group">
+						<label for="password">Password</label>
+						<input type="password" id="password" required>
+					</div>
+					<div class="form-group" id="usernameGroup" style="display: none;">
+						<label for="username">Username</label>
+						<input type="text" id="username">
+					</div>
+				</form>
+			</div>
+			<div class="modal-footer">
+				<button class="modal-submit" onclick="handleAuth(event)">Login</button>
+				<button class="modal-switch" onclick="toggleAuthMode()">Register Instead</button>
+			</div>
+		</div>
+	</div>
+
+	<div class="modal-overlay" id="createPostModal">
+		<div class="modal">
+			<div class="modal-header">
+				<h3>Create New Post</h3>
+				<button class="modal-close" onclick="closeCreatePostModal()">&times;</button>
+			</div>
+			<div class="modal-body">
+				<form id="createPostForm" onsubmit="handleCreatePost(event)">
+					<div class="form-group">
+						<label for="postTitle">Title</label>
+						<input type="text" id="postTitle" required>
+					</div>
+					<div class="form-group">
+						<label for="postContent">Content</label>
+						<textarea id="postContent" required></textarea>
+					</div>
+					<div class="form-group">
+						<label>Categories</label>
+						<div class="category-checkboxes" id="postCategories">
+							<!-- Categories will be loaded here -->
+						</div>
+					</div>
+				</form>
+			</div>
+			<div class="modal-footer">
+				<button class="modal-submit" onclick="handleCreatePost(event)">Create Post</button>
+				<button class="modal-switch" onclick="closeCreatePostModal()">Cancel</button>
+			</div>
+		</div>
+	</div>
+</body>
+</html>
