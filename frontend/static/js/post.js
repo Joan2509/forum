@@ -48,3 +48,31 @@ function closeCreatePostModal() {
     document.getElementById('createPostModal').classList.remove('active');
     document.getElementById('createPostForm').reset();
 }
+
+async function handleCreatePost(event) {
+    event.preventDefault();
+
+    const title = document.getElementById('postTitle').value;
+    const content = document.getElementById('postContent').value;
+    const selectedCategories = Array.from(document.querySelectorAll('#postCategories input:checked')).map(input => parseInt(input.value));
+
+    try {
+        const response = await fetch('/api/protected/posts/create', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            bosy: JSON.stringify({ title, content, categories: selectedCategories })
+        });
+        if (!response.ok) {
+            const error = await response.json();
+            handleError(error.message || 'Failed to create post');
+            return;
+        }
+        handleSuccess('Post created successfully');
+        closeCreatePostModal();
+        fetchPosts(); // Reload posts
+    } catch (e) {
+        handleError(e.message)
+    }
+}
