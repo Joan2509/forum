@@ -31,3 +31,12 @@ function openAuthModal(mode) {
     document.querySelector('.modal-switch').textContent = isLoginMode ? 'Register Instead' : 'Login Instead';
     document.querySelector('.modal-submit').textContent = isLoginMode ? 'Login' : 'Register';
 }
+function closeAuthModal() {
+    document.getElementById('authModal').classList.remove('active');
+    document.getElementById('authForm').reset();
+}
+
+function toggleAuthMode() {
+    isLoginMode = !isLoginMode;
+    openAuthModal(isLoginMode ? 'login' : 'register');
+}
