@@ -64,9 +64,9 @@ async function submitComment(postId) {
         }
 
         textarea.value = '';
-        commentForm.style.display = 'none';
+        // commentForm.style.display = 'none';
         openCommentSections.add(postId);
-        await fetchPosts();
+        fetchPosts();
     } catch (error) {
         console.error('Error submitting comment:', error);
         handleError('Please login to comment');
