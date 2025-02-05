@@ -40,3 +40,43 @@ function toggleAuthMode() {
     isLoginMode = !isLoginMode;
     openAuthModal(isLoginMode ? 'login' : 'register');
 }
+async function handleAuth(event) {
+    event.preventDefault();
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+    const username = document.getElementById('username').value;
+
+    try {
+        const response = await fetch(`/api/${isLoginMode ? 'login' : 'register'}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                email,
+                password,
+                username: isLoginMode ? undefined : username
+            })
+        });
+
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.message || 'Authentication failed');
+        }
+
+        handleSuccess(isLoginMode ? 'Login successful!' : 'Registration successful!');
+        closeAuthModal();
+        window.location.reload();
+    } catch (error) {
+        handleError(error.message);
+    }
+}
+
+async function logout() {
+    try {
+        await fetch('/api/protected/api/logout', { method: 'POST' });
+        window.location.reload();
+    } catch (error) {
+        console.error('Error logging out:', error);
+    }
+}
