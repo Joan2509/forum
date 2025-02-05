@@ -8,6 +8,7 @@ import (
 	"forum/database"
 	"forum/handlers"
 	"forum/middleware"
+	"forum/utils"
 )
 
 func serveTemplate(w http.ResponseWriter, r *http.Request, templatePath string) {
@@ -32,10 +33,14 @@ func main() {
 			serveTemplate(w, r, "index.html")
 			return
 		}
-		http.NotFound(w, r)
+		utils.RenderErrorPage(w, http.StatusNotFound)
 	})
 
 	http.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			utils.RenderErrorPage(w, http.StatusMethodNotAllowed)
+			return
+		}
 		serveTemplate(w, r, "login.html")
 	})
 
