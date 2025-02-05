@@ -72,3 +72,26 @@ async function submitComment(postId) {
         handleError('Please login to comment');
     }
 }
+async function handleCommentLike(commentId, isLike) {
+    try {
+        const response = await fetch('/api/protected/api/comments/like', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                comment_id: commentId,
+                is_like: isLike
+            })
+        });
+        
+        if (!response.ok) {
+            throw new Error('Failed to update like');
+        }
+        
+        await fetchPosts();
+    } catch (error) {
+        console.error('Error handling comment like:', error);
+        handleError('Please login to like comments');
+    }
+} 
