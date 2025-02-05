@@ -45,7 +45,7 @@ func GetPostsHandler(w http.ResponseWriter, r *http.Request) {
 
 	if filterID == "my-posts" && userID > 0 {
 		posts, err = database.GetUserPosts(userID)
-	} else if filterID == "like-posts" && userID > 0 {
+	} else if filterID == "liked-posts" && userID > 0 {
 		posts, err = database.GetLikedPosts(userID)
 	} else if categoryID != "" {
 		posts, err = database.GetPostsByCategory(categoryID)
