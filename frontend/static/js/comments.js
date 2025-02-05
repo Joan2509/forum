@@ -6,7 +6,9 @@ function renderComments(comments) {
     
     return comments.map(comment => `
         <div class="comment">
-            <p>${comment.content}</p>
+            <div class="comment-content">
+                <p>${comment.content}</p>
+            </div>
             <div class="comment-footer">
                 <small>By ${comment.username} on ${new Date(comment.created_at).toLocaleString()}</small>
                 <div class="comment-actions">
@@ -78,8 +80,25 @@ async function submitComment(postId) {
         textarea.value = '';
         commentForm.style.display = 'none';
         
+        // Store the current open comments
+        const openComments = new Set();
+        document.querySelectorAll('.comments-container').forEach(container => {
+            if (container.style.display !== 'none') {
+                openComments.add(parseInt(container.id.split('-').pop()));
+            }
+        });
+        
         // Fetch the updated post data
         await fetchPosts();
+        
+        // Restore open state of comments
+        openComments.forEach(id => {
+            const container = document.getElementById(`comments-container-${id}`);
+            if (container) {
+                container.style.display = 'block';
+            }
+        });
+        
         handleSuccess('Comment posted successfully');
     } catch (error) {
         console.error('Error submitting comment:', error);
@@ -97,6 +116,14 @@ async function handleCommentLike(commentId, isLike) {
             return;
         }
 
+        // Store the current open comments
+        const openComments = new Set();
+        document.querySelectorAll('.comments-container').forEach(container => {
+            if (container.style.display !== 'none') {
+                openComments.add(parseInt(container.id.split('-').pop()));
+            }
+        });
+
         const response = await fetch('/api/protected/api/comments/like', {
             method: 'POST',
             headers: {
@@ -104,8 +131,7 @@ async function handleCommentLike(commentId, isLike) {
             },
             body: JSON.stringify({
                 comment_id: commentId,
-                is_like: isLike,
-                user_id: authData.user_id
+                is_like: isLike
             })
         });
         
@@ -114,6 +140,15 @@ async function handleCommentLike(commentId, isLike) {
         }
         
         await fetchPosts();
+        
+        // Restore open state of comments
+        openComments.forEach(id => {
+            const container = document.getElementById(`comments-container-${id}`);
+            if (container) {
+                container.style.display = 'block';
+            }
+        });
+        
         handleSuccess(isLike ? 'Comment liked!' : 'Comment disliked!');
     } catch (error) {
         console.error('Error handling comment like:', error);
