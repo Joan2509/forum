@@ -62,7 +62,8 @@ func main() {
 	protectedMux.HandleFunc("/api/posts", handlers.GetPostsHandler)
 	protectedMux.HandleFunc("/api/posts/create", handlers.CreatePostHandler)
 	protectedMux.HandleFunc("/api/comments", handlers.CreateCommentHandler)
-	protectedMux.HandleFunc("/api/likes", handlers.CreateLikeDislikeHandler)
+	protectedMux.HandleFunc("/api/comments/likes", handlers.CreateCommentLikeDislikeHandler)
+	protectedMux.HandleFunc("/api/posts/likes", handlers.CreateLikeDislikeHandler)
 	protectedMux.HandleFunc("/api/auth/status", handlers.AuthStatusHandler)
 
 	http.Handle("/api/protected/", middleware.AuthMiddleware(http.StripPrefix("/api/protected", protectedMux)))
