@@ -121,12 +121,11 @@ async function handleCreatePost(event) {
             headers: {
                 'Content-Type': 'application/json'
             },
-            bosy: JSON.stringify({ title, content, categories: selectedCategories })
+            body: JSON.stringify({ title, content, raw_categories: selectedCategories })
         });
         if (!response.ok) {
             const error = await response.json();
-            handleError(error.message || 'Failed to create post');
-            return;
+            throw new Error(error.message || 'Failed to create post');
         }
         handleSuccess('Post created successfully');
         closeCreatePostModal();
