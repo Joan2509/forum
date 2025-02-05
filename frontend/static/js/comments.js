@@ -31,3 +31,9 @@ function toggleComments(postId) {
         openCommentSections.delete(postId);
     }
 }
+function showCommentForm(postId) {
+    const commentsContainer = document.getElementById(`comments-container-${postId}`);
+    const form = document.getElementById(`comment-form-${postId}`);
+    commentsContainer.style.display = 'block';
+    form.style.display = 'block';
+}
