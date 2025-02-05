@@ -21,3 +21,13 @@ function renderComments(comments) {
         </div>
     `).join('');
 }
+function toggleComments(postId) {
+    const container = document.getElementById(`comments-container-${postId}`);
+    if (container.style.display === 'none') {
+        container.style.display = 'block';
+        openCommentSections.add(postId);
+    } else {
+        container.style.display = 'none';
+        openCommentSections.delete(postId);
+    }
+}
