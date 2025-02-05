@@ -37,3 +37,38 @@ function showCommentForm(postId) {
     commentsContainer.style.display = 'block';
     form.style.display = 'block';
 }
+async function submitComment(postId) {
+    const commentForm = document.getElementById(`comment-form-${postId}`);
+    const textarea = commentForm.querySelector('textarea');
+    const content = textarea.value.trim();
+
+    if (!content) {
+        handleError('Comment cannot be empty');
+        return;
+    }
+
+    try {
+        const response = await fetch('/api/protected/api/comments', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                post_id: postId,
+                content: content
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to submit comment');
+        }
+
+        textarea.value = '';
+        commentForm.style.display = 'none';
+        openCommentSections.add(postId);
+        await fetchPosts();
+    } catch (error) {
+        console.error('Error submitting comment:', error);
+        handleError('Please login to comment');
+    }
+}
