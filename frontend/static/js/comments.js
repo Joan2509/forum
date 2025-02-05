@@ -74,7 +74,7 @@ async function submitComment(postId) {
 }
 async function handleCommentLike(commentId, isLike) {
     try {
-        const response = await fetch('/api/protected/api/comments/like', {
+        const response = await fetch('/api/protected/api/comments/likes', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

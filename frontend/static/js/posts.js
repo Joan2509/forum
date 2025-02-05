@@ -137,7 +137,7 @@ async function handleCreatePost(event) {
 
 async function handleLike(postId, isLike) {
     try {
-        const response = await fetch("/api/protected/api/likes", {
+        const response = await fetch("/api/protected/api/posts/likes", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
