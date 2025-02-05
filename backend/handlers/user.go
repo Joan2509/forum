@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"forum/database"
+	"forum/middleware"
 
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
@@ -42,12 +43,20 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Delete any existing sessions for this user
+	err = database.DeleteUserSessions(user.ID)
+	if err != nil {
+		http.Error(w, "Failed to manage sessions", http.StatusInternalServerError)
+		return
+	}
+
 	// Generate a session token
 	sessionToken := uuid.New().String()
 	expiresAt := time.Now().Add(24 * time.Hour) // Session expires in 24 hours
 
 	// Store the session token in the database
-	_, err = database.DB.Exec("INSERT INTO sessions (token, user_id, expires_at) VALUES (?, ?, ?)", sessionToken, user.ID, expiresAt)
+	_, err = database.DB.Exec("INSERT INTO sessions (token, user_id, expires_at) VALUES (?, ?, ?)", 
+		sessionToken, user.ID, expiresAt)
 	if err != nil {
 		http.Error(w, "Failed to create session", http.StatusInternalServerError)
 		return
@@ -55,26 +64,32 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Set the session token as a cookie
 	http.SetCookie(w, &http.Cookie{
-		Name:    "session_token",
-		Value:   sessionToken,
-		Expires: expiresAt,
-		Path:    "/",
+		Name:     "session_token",
+		Value:    sessionToken,
+		Expires:  expiresAt,
+		Path:     "/",
+		HttpOnly: true,  // Added security: cookie not accessible via JavaScript
+		Secure:   true,  // Added security: only sent over HTTPS
+		SameSite: http.SameSiteStrictMode,  // Added security: CSRF protection
 	})
 
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(map[string]string{"message": "Login successful"})
+	json.NewEncoder(w).Encode(map[string]string{
+		"message":  "Login successful",
+		"username": user.Username,
+	})
 }
 
 func LogoutHandler(w http.ResponseWriter, r *http.Request) {
-	// Get the session token from the cookie
-	cookie, err := r.Cookie("session_token")
-	if err != nil {
-		http.Error(w, "Unauthorized: No session token", http.StatusUnauthorized)
+	// Get user ID from context
+	userID, ok := middleware.GetUserID(r)
+	if !ok {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
 
-	// Delete the session token from the database
-	_, err = database.DB.Exec("DELETE FROM sessions WHERE token = ?", cookie.Value)
+	// Delete all sessions for this user
+	err := database.DeleteUserSessions(userID)
 	if err != nil {
 		http.Error(w, "Failed to logout", http.StatusInternalServerError)
 		return
@@ -82,14 +97,17 @@ func LogoutHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Clear the session cookie
 	http.SetCookie(w, &http.Cookie{
-		Name:    "session_token",
-		Value:   "",
-		Expires: time.Now(),
-		Path:    "/",
+		Name:     "session_token",
+		Value:    "",
+		Path:     "/",
+		Expires:  time.Unix(0, 0),
+		HttpOnly: true,
+		Secure:   true,
+		SameSite: http.SameSiteStrictMode,
 	})
 
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(map[string]string{"message": "Logout successful"})
+	json.NewEncoder(w).Encode(map[string]string{"message": "Logged out successfully"})
 }
 
 func RegisterHandler(w http.ResponseWriter, r *http.Request) {

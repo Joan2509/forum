@@ -40,6 +40,24 @@ function toggleAuthMode() {
     isLoginMode = !isLoginMode;
     openAuthModal(isLoginMode ? 'login' : 'register');
 }
+
+// Add this function to periodically check auth status
+function startAuthStatusCheck() {
+    setInterval(async () => {
+        try {
+            const response = await fetch('/api/protected/api/auth/status');
+            if (!response.ok) {
+                // If we get an unauthorized response, we've been logged out
+                handleError('Your session has ended. Please login again.');
+                window.location.href = '/login';
+            }
+        } catch (error) {
+            console.error('Auth check failed:', error);
+        }
+    }, 30000); // Check every 30 seconds
+}
+
+// Call this function after successful login
 async function handleAuth(event) {
     event.preventDefault();
     const email = document.getElementById('email').value;
@@ -66,6 +84,11 @@ async function handleAuth(event) {
 
         handleSuccess(isLoginMode ? 'Login successful!' : 'Registration successful!');
         closeAuthModal();
+        
+        if (isLoginMode) {
+            startAuthStatusCheck(); // Start checking auth status after login
+        }
+        
         window.location.reload();
     } catch (error) {
         handleError(error.message);
