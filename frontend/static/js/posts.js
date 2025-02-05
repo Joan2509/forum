@@ -134,3 +134,24 @@ async function handleCreatePost(event) {
         handleError(e.message)
     }
 }
+
+async function handleLike(postId, isLike) {
+    try {
+        const response = await fetch("/api/protected/api/likes", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({post_id: postId, is_like: isLike}),
+        })
+        if (response.ok) {
+            fetchPosts()
+        } else {
+            const error = await response.json()
+            throw new Error(error.message || "Failed to update like")
+        }
+    } catch (e) {
+        console.error("Error handling like:", e)
+        handleError("Please login to like posts")
+    }
+}
