@@ -159,7 +159,6 @@ func GetCommentsByPostID(postID int) ([]models.Comment, error) {
 
 // Insert a like/dislike
 func CreateLikeDislike(like models.LikeDislike) error {
-	// First check if user already liked/disliked
 	var existingID int
 	err := DB.QueryRow(
 		"SELECT id FROM likes WHERE user_id = ? AND post_id = ?",

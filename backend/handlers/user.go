@@ -52,7 +52,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Generate a session token
 	sessionToken := uuid.New().String()
-	expiresAt := time.Now().Add(24 * time.Hour) // Session expires in 24 hours
+	expiresAt := time.Now().Add(24 * time.Hour) 
 
 	// Store the session token in the database
 	_, err = database.DB.Exec("INSERT INTO sessions (token, user_id, expires_at) VALUES (?, ?, ?)", 
@@ -68,9 +68,9 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		Value:    sessionToken,
 		Expires:  expiresAt,
 		Path:     "/",
-		HttpOnly: true,  // Added security: cookie not accessible via JavaScript
-		Secure:   true,  // Added security: only sent over HTTPS
-		SameSite: http.SameSiteStrictMode,  // Added security: CSRF protection
+		HttpOnly: true,  
+		Secure:   true,  
+		SameSite: http.SameSiteStrictMode,  
 	})
 
 	w.WriteHeader(http.StatusOK)
@@ -118,6 +118,37 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Validate required fields
+	if user.Username == "" || user.Email == "" || user.Password == "" {
+		http.Error(w, "All fields are required", http.StatusBadRequest)
+		return
+	}
+
+	// Check if username exists
+	var exists bool
+	err = database.DB.QueryRow("SELECT EXISTS(SELECT 1 FROM users WHERE username = ?)", user.Username).Scan(&exists)
+	if err != nil {
+		http.Error(w, "Failed to check username", http.StatusInternalServerError)
+		return
+	}
+	if exists {
+		w.WriteHeader(http.StatusConflict)
+		json.NewEncoder(w).Encode(map[string]string{"message": "Username already taken"})
+		return
+	}
+
+	// Check if email exists
+	err = database.DB.QueryRow("SELECT EXISTS(SELECT 1 FROM users WHERE email = ?)", user.Email).Scan(&exists)
+	if err != nil {
+		http.Error(w, "Failed to check email", http.StatusInternalServerError)
+		return
+	}
+	if exists {
+		w.WriteHeader(http.StatusConflict)
+		json.NewEncoder(w).Encode(map[string]string{"message": "Email already registered"})
+		return
+	}
+
 	// Hash password
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
 	if err != nil {
@@ -126,7 +157,8 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Insert user into database
-	_, err = database.DB.Exec("INSERT INTO users (username, email, password) VALUES (?, ?, ?)", user.Username, user.Email, string(hashedPassword))
+	_, err = database.DB.Exec("INSERT INTO users (username, email, password) VALUES (?, ?, ?)", 
+		user.Username, user.Email, string(hashedPassword))
 	if err != nil {
 		http.Error(w, "Failed to register user", http.StatusInternalServerError)
 		return

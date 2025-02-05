@@ -23,6 +23,68 @@ async function checkAuth() {
         console.error('Error checking auth status:', error);
     }
 }
+
+function validateForm() {
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value.trim();
+    const username = document.getElementById('username')?.value.trim();
+
+    const messageDiv = document.getElementById('authMessage');
+    messageDiv.style.display = 'block';
+    messageDiv.className = 'auth-message error';
+
+    if (isLoginMode) {
+        // Login validation
+        if (!email || !password) {
+            messageDiv.textContent = 'Please fill in all fields';
+            return false;
+        }
+    } else {
+        // Email validation
+        if (!email) {
+            messageDiv.textContent = 'Email is required';
+            return false;
+        }
+        if (!email.includes('@') || !email.includes('.')) {
+            messageDiv.textContent = 'Please enter a valid email address';
+            return false;
+        }
+
+        // Password validation
+        if (!password) {
+            messageDiv.textContent = 'Password is required';
+            return false;
+        }
+        if (password.length < 6) {
+            messageDiv.textContent = 'Password must be at least 6 characters long';
+            return false;
+        }
+
+        // Username validation
+        if (!username) {
+            messageDiv.textContent = 'Username is required';
+            return false;
+        }
+    }
+
+    messageDiv.style.display = 'none';
+    return true;
+}
+
+function showAuthError(message) {
+    const messageDiv = document.getElementById('authMessage');
+    messageDiv.textContent = message;
+    messageDiv.style.display = 'block';
+    messageDiv.className = 'auth-message error';
+}
+
+function showAuthSuccess(message) {
+    const messageDiv = document.getElementById('authMessage');
+    messageDiv.textContent = message;
+    messageDiv.style.display = 'block';
+    messageDiv.className = 'auth-message success';
+}
+
 function openAuthModal(mode, message = '') {
     isLoginMode = mode === 'login';
     const modalTitle = document.getElementById('modalTitle');
@@ -30,11 +92,8 @@ function openAuthModal(mode, message = '') {
     
     modalTitle.textContent = isLoginMode ? 'Login' : 'Register';
     
-    // Show/hide message if provided
     if (message) {
-        messageDiv.textContent = message;
-        messageDiv.style.display = 'block';
-        messageDiv.className = 'auth-message success';
+        showAuthSuccess(message);
     } else {
         messageDiv.style.display = 'none';
     }
@@ -44,6 +103,7 @@ function openAuthModal(mode, message = '') {
     document.querySelector('.modal-switch').textContent = isLoginMode ? 'Register Instead' : 'Login Instead';
     document.querySelector('.modal-submit').textContent = isLoginMode ? 'Login' : 'Register';
 }
+
 function closeAuthModal() {
     document.getElementById('authModal').classList.remove('active');
     document.getElementById('authForm').reset();
@@ -54,13 +114,13 @@ function toggleAuthMode() {
     openAuthModal(isLoginMode ? 'login' : 'register');
 }
 
-// Add this function to periodically check auth status
+// periodically check auth status
 function startAuthStatusCheck() {
     setInterval(async () => {
         try {
             const response = await fetch('/api/protected/api/auth/status');
             if (!response.ok) {
-                // If we get an unauthorized response, we've been logged out
+                // If logged out
                 handleError('Your session has ended. Please login again.');
                 window.location.href = '/login';
             }
@@ -70,12 +130,17 @@ function startAuthStatusCheck() {
     }, 30000); // Check every 30 seconds
 }
 
-// Call this function after successful login
+// Called after loging in successfully
 async function handleAuth(event) {
     event.preventDefault();
-    const email = document.getElementById('email').value;
-    const password = document.getElementById('password').value;
-    const username = document.getElementById('username').value;
+
+    if (!validateForm()) {
+        return;
+    }
+
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value.trim();
+    const username = document.getElementById('username')?.value.trim();
 
     try {
         const response = await fetch(`/api/${isLoginMode ? 'login' : 'register'}`, {
@@ -90,9 +155,21 @@ async function handleAuth(event) {
             })
         });
 
+        const data = await response.json();
+
         if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.message || 'Authentication failed');
+            // Handle specific error cases
+            switch (response.status) {
+                case 409: 
+                    showAuthError('This username or email is already taken');
+                    break;
+                case 401:
+                    showAuthError('Wrong email or password');
+                    break;
+                default:
+                    showAuthError(data.message || 'Authentication failed');
+            }
+            return;
         }
 
         if (isLoginMode) {
@@ -101,12 +178,12 @@ async function handleAuth(event) {
             startAuthStatusCheck();
             window.location.reload();
         } else {
-            // For registration, switch to login mode with success message
+            // Fswitch to login mode
             document.getElementById('authForm').reset();
             openAuthModal('login', 'Registration successful! Please login with your credentials.');
         }
     } catch (error) {
-        handleError(error.message);
+        showAuthError('An error occurred. Please try again.');
     }
 }
 
