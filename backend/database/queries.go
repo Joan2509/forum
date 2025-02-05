@@ -31,16 +31,16 @@ func CreatePost(post models.Post) error {
 	if err != nil {
 		return errors.New("failed to get last post id")
 	}
-	if err := InsertPostCategories(int(postID), post.Categories); err != nil {
+	if err := InsertPostCategories(int(postID), post.RawCategories); err != nil {
 		return err
 	}
 	return nil
 }
 
 // Insert categories for a post in categories table
-func InsertPostCategories(postID int, categories []models.Category) error {
+func InsertPostCategories(postID int, categories []int) error {
 	for _, category := range categories {
-		_, err := DB.Exec("INSERT INTO post_categories (post_id, category_id) VALUES (?,?)", postID, category.ID)
+		_, err := DB.Exec("INSERT INTO post_categories (post_id, category_id) VALUES (?,?)", postID, category)
 		if err != nil {
 			return errors.New("failed to add categories")
 		}
