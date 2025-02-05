@@ -48,6 +48,15 @@ async function submitComment(postId) {
     }
 
     try {
+        // First check authentication status
+        const authResponse = await fetch('/api/protected/api/auth/status');
+        const authData = await authResponse.json();
+        
+        if (!authData.authenticated) {
+            handleError('Please login to comment');
+            return;
+        }
+
         const response = await fetch('/api/protected/api/comments', {
             method: 'POST',
             headers: {
@@ -63,17 +72,31 @@ async function submitComment(postId) {
             throw new Error('Failed to submit comment');
         }
 
+        // Wait for the response before clearing the form
+        await response.json();
+        
         textarea.value = '';
         commentForm.style.display = 'none';
-        openCommentSections.add(postId);
+        
+        // Fetch the updated post data
         await fetchPosts();
+        handleSuccess('Comment posted successfully');
     } catch (error) {
         console.error('Error submitting comment:', error);
-        handleError('Please login to comment');
+        handleError('Failed to post comment');
     }
 }
 async function handleCommentLike(commentId, isLike) {
     try {
+        // Check authentication first
+        const authResponse = await fetch('/api/protected/api/auth/status');
+        const authData = await authResponse.json();
+        
+        if (!authData.authenticated) {
+            handleError('Please login to like comments');
+            return;
+        }
+
         const response = await fetch('/api/protected/api/comments/like', {
             method: 'POST',
             headers: {
@@ -81,7 +104,8 @@ async function handleCommentLike(commentId, isLike) {
             },
             body: JSON.stringify({
                 comment_id: commentId,
-                is_like: isLike
+                is_like: isLike,
+                user_id: authData.user_id
             })
         });
         
@@ -90,8 +114,9 @@ async function handleCommentLike(commentId, isLike) {
         }
         
         await fetchPosts();
+        handleSuccess(isLike ? 'Comment liked!' : 'Comment disliked!');
     } catch (error) {
         console.error('Error handling comment like:', error);
-        handleError('Please login to like comments');
+        handleError('Failed to update like');
     }
 } 

@@ -1,4 +1,3 @@
-
 async function loadPostCategories() {
     try {
         const response = await fetch('/api/categories');
@@ -132,5 +131,39 @@ async function handleCreatePost(event) {
         fetchPosts(); // Reload posts
     } catch (e) {
         handleError(e.message)
+    }
+}
+
+async function handleLike(postId, isLike) {
+    try {
+        // Check authentication first
+        const authResponse = await fetch('/api/protected/api/auth/status');
+        const authData = await authResponse.json();
+        
+        if (!authData.authenticated) {
+            handleError('Please login to like posts');
+            return;
+        }
+
+        const response = await fetch('/api/protected/api/likes', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                post_id: postId,
+                is_like: isLike
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to update like');
+        }
+
+        await fetchPosts();
+        handleSuccess(isLike ? 'Post liked!' : 'Post disliked!');
+    } catch (error) {
+        console.error('Error handling like:', error);
+        handleError('Failed to update like');
     }
 }

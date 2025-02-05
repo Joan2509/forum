@@ -170,7 +170,7 @@ func CreateLikeDislike(like models.LikeDislike) error {
 		// Create new like
 		_, err = DB.Exec(
 			"INSERT INTO likes (user_id, post_id, is_like) VALUES (?, ?, ?)",
-			like.UserID, like.PostID, map[bool]int{true: 1, false: 0}[like.IsLike],
+			like.UserID, like.PostID, like.IsLike,
 		)
 		return err
 	}
@@ -182,7 +182,7 @@ func CreateLikeDislike(like models.LikeDislike) error {
 	// Update existing like
 	_, err = DB.Exec(
 		"UPDATE likes SET is_like = ? WHERE id = ?",
-		map[bool]int{true: 1, false: 0}[like.IsLike], existingID,
+		like.IsLike, existingID,
 	)
 	return err
 }
