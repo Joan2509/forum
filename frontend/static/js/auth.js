@@ -23,9 +23,22 @@ async function checkAuth() {
         console.error('Error checking auth status:', error);
     }
 }
-function openAuthModal(mode) {
+function openAuthModal(mode, message = '') {
     isLoginMode = mode === 'login';
-    document.getElementById('modalTitle').textContent = isLoginMode ? 'Login' : 'Register';
+    const modalTitle = document.getElementById('modalTitle');
+    const messageDiv = document.getElementById('authMessage');
+    
+    modalTitle.textContent = isLoginMode ? 'Login' : 'Register';
+    
+    // Show/hide message if provided
+    if (message) {
+        messageDiv.textContent = message;
+        messageDiv.style.display = 'block';
+        messageDiv.className = 'auth-message success';
+    } else {
+        messageDiv.style.display = 'none';
+    }
+    
     document.getElementById('usernameGroup').style.display = isLoginMode ? 'none' : 'block';
     document.getElementById('authModal').classList.add('active');
     document.querySelector('.modal-switch').textContent = isLoginMode ? 'Register Instead' : 'Login Instead';
@@ -82,14 +95,16 @@ async function handleAuth(event) {
             throw new Error(error.message || 'Authentication failed');
         }
 
-        handleSuccess(isLoginMode ? 'Login successful!' : 'Registration successful!');
-        closeAuthModal();
-        
         if (isLoginMode) {
-            startAuthStatusCheck(); // Start checking auth status after login
+            handleSuccess('Login successful!');
+            closeAuthModal();
+            startAuthStatusCheck();
+            window.location.reload();
+        } else {
+            // For registration, switch to login mode with success message
+            document.getElementById('authForm').reset();
+            openAuthModal('login', 'Registration successful! Please login with your credentials.');
         }
-        
-        window.location.reload();
     } catch (error) {
         handleError(error.message);
     }
