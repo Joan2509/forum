@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"database/sql"
 	"encoding/json"
 	"log"
 	"net/http"
@@ -51,21 +52,15 @@ func GetPostsHandler(w http.ResponseWriter, r *http.Request) {
 		posts, err = database.GetPostsByCategory(categoryID)
 	} else {
 		posts, err = database.GetAllPosts()
-		// if err == sql.ErrNoRows {
-		// 	json.NewEncoder(w).Encode([]models.Post{})
-		// 	return
-		// }
 	}
-
+	// If no posts found, return empty array
+	if err == sql.ErrNoRows {
+		json.NewEncoder(w).Encode([]models.Post{})
+		return
+	}
 	if err != nil {
 		log.Printf("Error fetching posts: %v", err)
 		http.Error(w, "Failed to fetch posts", http.StatusInternalServerError)
-		return
-	}
-
-	// If no posts found, return empty array
-	if posts == nil {
-		json.NewEncoder(w).Encode([]models.Post{})
 		return
 	}
 
