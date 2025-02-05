@@ -48,7 +48,7 @@ async function submitComment(postId) {
     }
 
     try {
-        const response = await fetch('/api/protected/api/comments', {
+        const response = await fetch('/api/protected/api/comments/create', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -60,12 +60,10 @@ async function submitComment(postId) {
         });
 
         if (!response.ok) {
-            throw new Error('Failed to submit comment');
+            const error = await response.json();
+            throw new Error(error.message || 'Failed to create post');
         }
-
-        textarea.value = '';
-        // commentForm.style.display = 'none';
-        openCommentSections.add(postId);
+        handleSuccess('Post created successfully');
         fetchPosts();
     } catch (error) {
         console.error('Error submitting comment:', error);
