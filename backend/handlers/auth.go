@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"forum/backend/database"
-	"forum/backend/middleware"
+	"forum/database"
+	"forum/middleware"
 )
 
 func AuthStatusHandler(w http.ResponseWriter, r *http.Request) {

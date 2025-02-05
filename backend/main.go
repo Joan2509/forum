@@ -5,9 +5,9 @@ import (
 	"net/http"
 	"path/filepath"
 
-	"forum/backend/database"
-	"forum/backend/handlers"
-	"forum/backend/middleware"
+	"forum/database"
+	"forum/handlers"
+	"forum/middleware"
 )
 
 func serveTemplate(w http.ResponseWriter, r *http.Request, templatePath string) {
@@ -68,6 +68,6 @@ func main() {
 	http.Handle("/api/protected/", middleware.AuthMiddleware(http.StripPrefix("/api/protected", protectedMux)))
 
 	// Start server
-	log.Println("Server started on :8080")
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	log.Println("Server started on http://localhost:9111")
+	log.Fatal(http.ListenAndServe(":9111", nil))
 }
