@@ -37,11 +37,7 @@ func GetPostsHandler(w http.ResponseWriter, r *http.Request) {
 	// Get filter parameters
 	categoryID := r.URL.Query().Get("category")
 	filterID := r.URL.Query().Get("filter")
-	userID, ok := middleware.GetUserID(r)
-	if !ok {
-		http.Error(w, "Unauthorized: No user ID", http.StatusUnauthorized)
-		return
-	}
+	userID, _ := middleware.GetUserID(r)
 	var (
 		posts []models.Post
 		err   error
@@ -88,7 +84,7 @@ func GetPostsHandler(w http.ResponseWriter, r *http.Request) {
 		comments, err := database.GetCommentsByPostID(posts[i].ID)
 		if err != nil {
 			log.Printf("Error fetching comments: %v", err)
-            continue
+			continue
 		}
 		posts[i].Comments = comments
 	}
