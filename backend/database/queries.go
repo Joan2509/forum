@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 
-	"forum/backend/models"
+	"forum/models"
 )
 
 // Insert a new user
@@ -24,13 +24,13 @@ func GetUserByEmail(email string) (models.User, error) {
 // Insert a new post
 func CreatePost(post models.Post) error {
 	res, err := DB.Exec("INSERT INTO posts (user_id, title, content) VALUES (?, ?, ?)", post.UserID, post.Title, post.Content)
-	if err!= nil {
-        return errors.New("failed to insert post into post table")
-    }
+	if err != nil {
+		return errors.New("failed to insert post into post table")
+	}
 	postID, err := res.LastInsertId()
-	if err!= nil {
-        return errors.New("failed to get last post id")
-    }
+	if err != nil {
+		return errors.New("failed to get last post id")
+	}
 	if err := InsertPostCategories(int(postID), post.Categories); err != nil {
 		return err
 	}
@@ -39,13 +39,13 @@ func CreatePost(post models.Post) error {
 
 // Insert categories for a post in categories table
 func InsertPostCategories(postID int, categories []models.Category) error {
-    for _, category := range categories {
-        _, err := DB.Exec("INSERT INTO post_categories (post_id, category_id) VALUES (?,?)", postID, category.ID)
-        if err!= nil {
-            return errors.New("failed to add categories")
-        }
-    }
-    return nil
+	for _, category := range categories {
+		_, err := DB.Exec("INSERT INTO post_categories (post_id, category_id) VALUES (?,?)", postID, category.ID)
+		if err != nil {
+			return errors.New("failed to add categories")
+		}
+	}
+	return nil
 }
 
 // Get all posts

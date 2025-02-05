@@ -5,9 +5,9 @@ import (
 	"log"
 	"net/http"
 
-	"forum/backend/database"
-	"forum/backend/middleware"
-	"forum/backend/models"
+	"forum/database"
+	"forum/middleware"
+	"forum/models"
 )
 
 func CreatePostHandler(w http.ResponseWriter, r *http.Request) {

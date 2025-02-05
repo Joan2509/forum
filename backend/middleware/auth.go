@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"time"
 
-	"forum/backend/database"
+	"forum/database"
 )
 
 type contextKey string
