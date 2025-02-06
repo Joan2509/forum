@@ -5,17 +5,23 @@ import (
 	"net/http"
 
 	"forum/database"
+	"forum/middleware"
 	"forum/models"
 )
 
 func CreateCommentHandler(w http.ResponseWriter, r *http.Request) {
+	userId, ok := middleware.GetUserID(r)
+	if !ok {
+		http.Error(w, "Unauthorized: No user ID", http.StatusUnauthorized)
+		return
+	}
 	var comment models.Comment
+	comment.UserID = userId
 	err := json.NewDecoder(r.Body).Decode(&comment)
 	if err != nil {
 		http.Error(w, "Invalid request payload", http.StatusBadRequest)
 		return
 	}
-
 	err = database.CreateComment(comment)
 	if err != nil {
 		http.Error(w, "Failed to create comment", http.StatusInternalServerError)
