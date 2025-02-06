@@ -18,7 +18,7 @@ func serveTemplate(w http.ResponseWriter, r *http.Request, templatePath string) 
 
 func main() {
 	// Initialize database
-	err := database.InitDB()
+	err := database.InitDB("./forum.db")
 	if err != nil {
 		log.Fatalf("Failed to initialize database: %v", err)
 	}
