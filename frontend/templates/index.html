@@ -98,6 +98,15 @@
 				<h3 id="modalTitle">Login</h3>
 				<button onclick="closeAuthModal()" class="modal-close">&times;</button>
 			</div>
+			<div id="password-requirements" class="password-requirements" style="display: none;">
+				<h4>Password Requirements:</h4>
+				<ul>
+					<li id="length-check"><i class="fas fa-circle"></i> At least 8 characters</li>
+					<li id="number-check"><i class="fas fa-circle"></i> At least 1 number</li>
+					<li id="special-check"><i class="fas fa-circle"></i> At least 1 special character</li>
+					<li id="uppercase-check"><i class="fas fa-circle"></i> At least 1 uppercase letter</li>
+				</ul>
+			</div>
 			<div id="authMessage" class="auth-message" style="display: none;"></div>
 			<div class="modal-body">
 				<form id="authForm" onsubmit="handleAuth(event)">
@@ -107,7 +116,13 @@
 					</div>
 					<div class="form-group">
 						<label for="password">Password</label>
-						<input type="password" id="password" required>
+						<input type="password" id="password" oninput="checkPasswordStrength(this.value)" required>
+						<div id="password-strength-container" class="strength-container" style="display: none;">
+							<div class="strength-meter-container">
+								<div id="password-strength" class="strength-meter"></div>
+							</div>
+							<span id="strength-text" class="strength-text"></span>
+						</div>
 					</div>
 					<div class="form-group" id="usernameGroup" style="display: none;">
 						<label for="username">Username</label>

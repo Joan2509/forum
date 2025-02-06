@@ -66,8 +66,25 @@ function validateForm() {
             messageDiv.textContent = 'Password is required';
             return false;
         }
-        if (password.length < 6) {
-            messageDiv.textContent = 'Password must be at least 6 characters long';
+        
+        // Enhanced password validation
+        if (password.length < 8) {
+            messageDiv.textContent = 'Password must be at least 8 characters long';
+            return false;
+        }
+        
+        if (!/\d/.test(password)) {
+            messageDiv.textContent = 'Password must contain at least one number';
+            return false;
+        }
+        
+        if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
+            messageDiv.textContent = 'Password must contain at least one special character';
+            return false;
+        }
+        
+        if (!/[A-Z]/.test(password)) {
+            messageDiv.textContent = 'Password must contain at least one uppercase letter';
             return false;
         }
 
@@ -100,6 +117,8 @@ function openAuthModal(mode, message = '') {
     isLoginMode = mode === 'login';
     const modalTitle = document.getElementById('modalTitle');
     const messageDiv = document.getElementById('authMessage');
+    const strengthContainer = document.getElementById('password-strength-container');
+    const requirementsDiv = document.getElementById('password-requirements');
     
     modalTitle.textContent = isLoginMode ? 'Login' : 'Register';
     
@@ -109,10 +128,19 @@ function openAuthModal(mode, message = '') {
         messageDiv.style.display = 'none';
     }
     
+    // Show/hide password strength elements and requirements based on mode
+    strengthContainer.style.display = isLoginMode ? 'none' : 'block';
+    requirementsDiv.style.display = isLoginMode ? 'none' : 'block';
+    
     document.getElementById('usernameGroup').style.display = isLoginMode ? 'none' : 'block';
     document.getElementById('authModal').classList.add('active');
     document.querySelector('.modal-switch').textContent = isLoginMode ? 'Register Instead' : 'Login Instead';
     document.querySelector('.modal-submit').textContent = isLoginMode ? 'Login' : 'Register';
+    
+    // Reset password strength meter and requirements
+    if (!isLoginMode) {
+        checkPasswordStrength('');
+    }
 }
 
 function closeAuthModal() {
@@ -204,5 +232,81 @@ async function logout() {
         window.location.reload();
     } catch (error) {
         console.error('Error logging out:', error);
+    }
+}
+
+// Update the checkPasswordStrength function
+function checkPasswordStrength(password) {
+    const strengthMeter = document.getElementById('password-strength');
+    const strengthText = document.getElementById('strength-text');
+    
+    // Get requirement elements
+    const lengthCheck = document.getElementById('length-check');
+    const numberCheck = document.getElementById('number-check');
+    const specialCheck = document.getElementById('special-check');
+    const uppercaseCheck = document.getElementById('uppercase-check');
+    
+    if (!password) {
+        strengthMeter.style.width = '0%';
+        strengthMeter.style.backgroundColor = '#e0e0e0';
+        strengthText.textContent = '';
+        
+        // Reset all requirement checks
+        [lengthCheck, numberCheck, specialCheck, uppercaseCheck].forEach(check => {
+            check.classList.remove('valid');
+        });
+        return;
+    }
+
+    let strength = 0;
+    
+    // Length check
+    if (password.length >= 8) {
+        strength += 25;
+        lengthCheck.classList.add('valid');
+    } else {
+        lengthCheck.classList.remove('valid');
+    }
+
+    // Contains number
+    if (/\d/.test(password)) {
+        strength += 25;
+        numberCheck.classList.add('valid');
+    } else {
+        numberCheck.classList.remove('valid');
+    }
+
+    // Contains special char
+    if (/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
+        strength += 25;
+        specialCheck.classList.add('valid');
+    } else {
+        specialCheck.classList.remove('valid');
+    }
+
+    // Contains uppercase
+    if (/[A-Z]/.test(password)) {
+        strength += 25;
+        uppercaseCheck.classList.add('valid');
+    } else {
+        uppercaseCheck.classList.remove('valid');
+    }
+
+    // Update strength meter
+    strengthMeter.style.width = `${strength}%`;
+    
+    // Update color based on strength
+    if (strength <= 25) {
+        strengthMeter.style.backgroundColor = '#ff4d4d';
+        strengthText.textContent = 'Weak';
+    } else if (strength <= 50) {
+        strengthMeter.style.backgroundColor = '#ffd700';
+        strengthText.textContent = 'Fair';
+    } else if (strength <= 75) {
+        strengthMeter.style.backgroundColor = '#2ecc71';
+        strengthText.textContent = 'Good';
+    } else {
+        strengthMeter.style.backgroundColor = '#27ae60';
+        strengthText.textContent = 'Strong';
     }
 }

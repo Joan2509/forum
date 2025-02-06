@@ -1093,3 +1093,74 @@ main {
     gap: 0.5rem;
     padding: 1rem 0;
 }
+
+/* Add these styles after your existing modal styles (around line 825) */
+.strength-container {
+    margin-top: 5px;
+    width: 100%;
+}
+
+.strength-meter-container {
+    width: 100%;
+    height: 4px;
+    background-color: var(--bg-elevated);
+    border-radius: 2px;
+    margin-top: 5px;
+}
+
+.strength-meter {
+    height: 100%;
+    width: 0;
+    border-radius: 2px;
+    transition: all 0.3s ease;
+}
+
+.strength-text {
+    font-size: 12px;
+    margin-top: 4px;
+    display: block;
+    color: var(--text-secondary);
+}
+
+/* Add these styles for the password requirements section */
+.password-requirements {
+    background-color: var(--bg-elevated);
+    border-radius: var(--border-radius);
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border: 1px solid var(--border-color);
+}
+
+.password-requirements h4 {
+    color: var(--text-primary);
+    font-size: 0.95rem;
+    margin-bottom: 0.5rem;
+}
+
+.password-requirements ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.password-requirements li {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    margin-bottom: 0.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.password-requirements li i {
+    font-size: 0.6rem;
+    color: var(--text-muted);
+}
+
+.password-requirements li.valid {
+    color: var(--primary-color);
+}
+
+.password-requirements li.valid i {
+    color: var(--primary-color);
+}
