@@ -85,7 +85,7 @@ async function fetchPosts() {
         const posts = await response.json();
         const postsList = document.getElementById('posts-list');
 
-        if (postsList.length === 0) {
+        if (!posts || posts.length === 0) {
             postsList.innerHTML = '<p>No posts yet. Be the first to create one!</p>';
             return;
         }
