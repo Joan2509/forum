@@ -1,5 +1,5 @@
-// Authentication related functions
 let isLoginMode = true;
+let messageTimeout;
 
 async function checkAuth() {
     try {
@@ -8,19 +8,62 @@ async function checkAuth() {
         const authButtons = document.getElementById('auth-buttons');
         const userFilters = document.getElementById('userFilters');
         
-        if (data.authenticated) {
-            authButtons.innerHTML = `
-                <div class="auth-status">
-                    <span class="welcome-text">Welcome, ${data.username}</span>
-                    <button onclick="logout()" class="auth-btn logout-btn">Logout</button>
-                </div>
-            `;
-            userFilters.style.display = 'flex';
-        } else {
-            userFilters.style.display = 'none';
-        }
+        authButtons.innerHTML = data.authenticated ? 
+            `<div class="auth-status">
+                <span class="welcome-text">Welcome, ${data.username}</span>
+                <button onclick="logout()" class="auth-btn logout-btn">Logout</button>
+            </div>` : '';
+        userFilters.style.display = data.authenticated ? 'flex' : 'none';
     } catch (error) {
         console.error('Error checking auth status:', error);
+    }
+}
+
+function showAuthMessage(message, type = 'error') {
+    clearTimeout(messageTimeout);
+    const messageDiv = document.getElementById('authMessage');
+    messageDiv.textContent = message;
+    messageDiv.style.display = message ? 'block' : 'none';
+    messageDiv.className = `auth-message ${type}`;
+
+    if (type === 'success') {
+        messageTimeout = setTimeout(() => {
+            messageDiv.style.display = 'none';
+        }, 5000);
+    }
+}
+
+function setupFormListeners() {
+    const form = document.getElementById('authForm');
+    const inputs = form.querySelectorAll('input');
+    const messageDiv = document.getElementById('authMessage');
+    
+    function clearErrorMessage() {
+        if (messageDiv.classList.contains('error')) {
+            messageDiv.style.display = 'none';
+            messageDiv.textContent = '';
+        }
+    }
+    
+    inputs.forEach(input => {
+        input.addEventListener('input', clearErrorMessage);
+        input.addEventListener('focus', clearErrorMessage);
+    });
+}
+
+function validatePassword(password) {
+    if (!password) {
+        throw new Error('Password is required');
+    }
+    
+    const requirements = {
+        minLength: password.length >= 8,
+        hasAlphanumeric: /[a-zA-Z]/.test(password) && /\d/.test(password),
+        hasAllowedSpecialChar: /^[a-zA-Z0-9@#]*$/.test(password)
+    };
+
+    if (!Object.values(requirements).every(Boolean)) {
+        throw new Error('Password must be at least 8 characters long, include alphanumeric characters, and may contain special characters @ or #.');
     }
 }
 
@@ -29,161 +72,102 @@ function validateForm() {
     const password = document.getElementById('password').value.trim();
     const username = document.getElementById('username')?.value.trim();
 
-    const messageDiv = document.getElementById('authMessage');
-    messageDiv.style.display = 'block';
-    messageDiv.className = 'auth-message error';
-
-    if (isLoginMode) {
-        // Login validation
-        if (!email || !password) {
-            messageDiv.textContent = 'Please fill in all fields';
-            return false;
-        }
-    } else {
-        // Email validation
-        if (!email) {
-            messageDiv.textContent = 'Email is required';
-            return false;
-        }
-        if (!email.includes('@') || !email.includes('.')) {
-            messageDiv.textContent = 'Please enter a valid email address';
-            return false;
-        }
-
-        // Password validation
-        if (!password) {
-            messageDiv.textContent = 'Password is required';
-            return false;
-        }
-        if (password.length < 6) {
-            messageDiv.textContent = 'Password must be at least 6 characters long';
-            return false;
-        }
-
-        // Username validation
-        if (!username) {
-            messageDiv.textContent = 'Username is required';
-            return false;
-        }
+    if (!email || (!isLoginMode && !username)) {
+        showAuthMessage('Please fill in all fields');
+        return false;
     }
 
-    messageDiv.style.display = 'none';
+    if (!email.includes('@') || !email.includes('.')) {
+        showAuthMessage('Please enter a valid email address');
+        return false;
+    }
+
+    try {
+        validatePassword(password);
+    } catch (error) {
+        showAuthMessage(error.message);
+        return false;
+    }
+
+    showAuthMessage('', 'none');
     return true;
-}
-
-function showAuthError(message) {
-    const messageDiv = document.getElementById('authMessage');
-    messageDiv.textContent = message;
-    messageDiv.style.display = 'block';
-    messageDiv.className = 'auth-message error';
-}
-
-function showAuthSuccess(message) {
-    const messageDiv = document.getElementById('authMessage');
-    messageDiv.textContent = message;
-    messageDiv.style.display = 'block';
-    messageDiv.className = 'auth-message success';
 }
 
 function openAuthModal(mode, message = '') {
     isLoginMode = mode === 'login';
     const modalTitle = document.getElementById('modalTitle');
-    const messageDiv = document.getElementById('authMessage');
     
     modalTitle.textContent = isLoginMode ? 'Login' : 'Register';
-    
-    if (message) {
-        showAuthSuccess(message);
-    } else {
-        messageDiv.style.display = 'none';
-    }
-    
     document.getElementById('usernameGroup').style.display = isLoginMode ? 'none' : 'block';
     document.getElementById('authModal').classList.add('active');
-    document.querySelector('.modal-switch').textContent = isLoginMode ? 'Register Instead' : 'Login Instead';
+    document.querySelector('.modal-switch').textContent = `${isLoginMode ? 'Register' : 'Login'} Instead`;
     document.querySelector('.modal-submit').textContent = isLoginMode ? 'Login' : 'Register';
+    
+    if (message) {
+        showAuthMessage(message, 'success');
+    } else {
+        showAuthMessage('', 'none');
+    }
+    
+    setupFormListeners();
 }
 
 function closeAuthModal() {
+    clearTimeout(messageTimeout);
     document.getElementById('authModal').classList.remove('active');
     document.getElementById('authForm').reset();
+    showAuthMessage('', 'none');
 }
 
-function toggleAuthMode() {
-    isLoginMode = !isLoginMode;
-    openAuthModal(isLoginMode ? 'login' : 'register');
-}
-
-// periodically check auth status
-function startAuthStatusCheck() {
-    setInterval(async () => {
-        try {
-            const response = await fetch('/api/protected/api/auth/status');
-            if (!response.ok) {
-                // If logged out
-                handleError('Your session has ended. Please login again.');
-                window.location.href = '/login';
-            }
-        } catch (error) {
-            console.error('Auth check failed:', error);
-        }
-    }, 30000); // Check every 30 seconds
-}
-
-// Called after loging in successfully
 async function handleAuth(event) {
     event.preventDefault();
+    if (!validateForm()) return;
 
-    if (!validateForm()) {
-        return;
-    }
-
-    const email = document.getElementById('email').value.trim();
-    const password = document.getElementById('password').value.trim();
-    const username = document.getElementById('username')?.value.trim();
+    const formData = {
+        email: document.getElementById('email').value.trim(),
+        password: document.getElementById('password').value.trim(),
+        username: isLoginMode ? undefined : document.getElementById('username').value.trim()
+    };
 
     try {
         const response = await fetch(`/api/${isLoginMode ? 'login' : 'register'}`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                email,
-                password,
-                username: isLoginMode ? undefined : username
-            })
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(formData)
         });
 
         const data = await response.json();
 
         if (!response.ok) {
-            // Handle specific error cases
-            switch (response.status) {
-                case 409: 
-                    showAuthError('This username or email is already taken');
-                    break;
-                case 401:
-                    showAuthError('Wrong email or password');
-                    break;
-                default:
-                    showAuthError(data.message || 'Authentication failed');
+            if (isLoginMode) {
+                showAuthMessage(data.message || 'Invalid email or password. Please try again.');
+                return;
+            } else {
+                switch (response.status) {
+                    case 409:
+                        showAuthMessage(`This ${data.field || 'email/username'} is already registered. Please use a different one.`);
+                        break;
+                    case 400:
+                        showAuthMessage(data.message || 'Invalid registration data. Please check your input.');
+                        break;
+                    default:
+                        showAuthMessage('Registration failed. Please try again.');
+                }
             }
             return;
         }
 
         if (isLoginMode) {
-            handleSuccess('Login successful!');
+            showAuthMessage('Login successful!', 'success');
             closeAuthModal();
-            startAuthStatusCheck();
             window.location.reload();
         } else {
-            // Fswitch to login mode
             document.getElementById('authForm').reset();
             openAuthModal('login', 'Registration successful! Please login with your credentials.');
         }
     } catch (error) {
-        showAuthError('An error occurred. Please try again.');
+        console.error('Authentication error:', error);
+        showAuthMessage('An error occurred. Please try again later.');
     }
 }
 
