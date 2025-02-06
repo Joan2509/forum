@@ -55,7 +55,7 @@ async function applyFilters(filterType = '', categoryId = '') {
         const posts = await response.json();
         const postsList = document.getElementById('posts-list');
         
-        if (posts.length === 0) {
+        if (!posts || posts.length === 0) {
             postsList.innerHTML = '<p>No posts found</p>';
             return;
         }
