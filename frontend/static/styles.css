@@ -214,9 +214,14 @@ main {
 }
 
 .post-content {
-	color: var(--text-primary);
 	margin-bottom: 1rem;
 	line-height: 1.6;
+}
+
+.post-content p {
+	color: var(--text-primary);
+	white-space: pre-wrap;
+	word-break: break-word;
 }
 
 .post-footer {
@@ -1044,4 +1049,24 @@ main {
     to {
         transform: rotate(360deg);
     }
+}
+
+.read-more-section {
+    margin-top: 0.5rem;
+}
+
+.read-more-btn {
+    background: none;
+    border: none;
+    color: var(--primary-color);
+    cursor: pointer;
+    font-size: 0.9rem;
+    padding: 0.25rem 0.5rem;
+    transition: var(--transition);
+}
+
+.read-more-btn:hover {
+    text-decoration: underline;
+    background-color: rgba(76, 175, 80, 0.1);
+    border-radius: var(--border-radius);
 }

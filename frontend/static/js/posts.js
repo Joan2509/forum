@@ -41,12 +41,26 @@ async function openCreatePostModal() {
 function createPostElement(post) {
     const postDiv = document.createElement('div');
     postDiv.className = 'post';
+    
+    // Truncate content if it's longer than 800 characters
+    const isLongPost = post.content.length > 800;
+    const truncatedContent = isLongPost ? post.content.slice(0, 800) + '...' : post.content;
+    
     postDiv.innerHTML = `
         <div class="post-header">
             <h3>${post.title}</h3>
             <small class="post-meta-info">Posted by ${post.username} on ${new Date(post.created_at).toLocaleString()}</small>
         </div>
-        <p>${post.content}</p>
+        <div class="post-content">
+            <p>${truncatedContent}</p>
+            ${isLongPost ? `
+                <div class="read-more-section">
+                    <button onclick="toggleFullPost(this, \`${encodeURIComponent(post.content)}\`)" class="read-more-btn">
+                        Read More
+                    </button>
+                </div>
+            ` : ''}
+        </div>
         <div class="post-footer">
             <div class="categories">
                 ${post.categories ? post.categories.map(cat => 
@@ -77,6 +91,22 @@ function createPostElement(post) {
         </div>
     `;
     return postDiv;
+}
+
+function toggleFullPost(button, content) {
+    const decodedContent = decodeURIComponent(content);
+    const postContent = button.closest('.post-content');
+    const paragraph = postContent.querySelector('p');
+    
+    if (button.textContent === 'Read More') {
+        paragraph.textContent = decodedContent;
+        button.textContent = 'Show Less';
+    } else {
+        paragraph.textContent = decodedContent.slice(0, 800) + '...';
+        button.textContent = 'Read More';
+        // Scroll back to the top of the post
+        button.closest('.post').scrollIntoView({ behavior: 'smooth' });
+    }
 }
 
 async function fetchPosts(append = false) {
