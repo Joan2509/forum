@@ -64,7 +64,7 @@ func GetPostsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Get dislikes and likes for each post
+	// Get comments and likes for each post
 	for i := range posts {
 		err = database.DB.QueryRow("SELECT COUNT(*) FROM likes WHERE post_id = ? AND is_like = 1", posts[i].ID).Scan(&posts[i].Likes)
 		if err != nil {

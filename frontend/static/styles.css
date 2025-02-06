@@ -307,19 +307,42 @@ main {
 	background-color: var(--bg-elevated);
 	padding: 1rem;
 	border-radius: var(--border-radius);
-	margin-bottom: 0.75rem;
-	border: 1px solid var(--border-color);
+	margin-bottom: 1rem;
 }
 
-.comment-header {
+.comment-footer {
 	display: flex;
 	justify-content: space-between;
-	margin-bottom: 0.5rem;
+	align-items: center;
+	margin-top: 0.5rem;
 }
 
-.comment-content {
-	color: var(--text-primary);
-	line-height: 1.5;
+.comment-actions {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+}
+
+.action-btn {
+	background: none;
+	border: none;
+	cursor: pointer;
+	padding: 0.25rem 0.5rem;
+	border-radius: var(--border-radius);
+	display: flex;
+	align-items: center;
+	gap: 0.25rem;
+	color: var(--text-secondary);
+	transition: var(--transition);
+}
+
+.action-btn:hover {
+	color: var(--primary-color);
+	background-color: var(--bg-hover);
+}
+
+.action-btn span {
+	font-size: 0.9rem;
 }
 
 .comment-form {
@@ -504,7 +527,7 @@ main {
 	}
 }
 
-/* Update the action buttons (like, dislike, comment) */
+/* Update the action buttons */
 .post-actions button {
     background-color: var(--bg-elevated);
     border: 1px solid var(--border-color);
@@ -550,14 +573,13 @@ main {
     background-color: var(--bg-dark);
 }
 
-/* Update sidebar right layout */
 .sidebar-right {
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
 }
 
-/* Style for category buttons */
+/* category buttons */
 .category-list {
     display: flex;
     flex-direction: column;
@@ -583,7 +605,7 @@ main {
     color: white;
 }
 
-/* Add search button to nav-right */
+/* search button */
 .search-btn {
     background-color: var(--bg-elevated);
     border: 1px solid var(--border-color);
@@ -686,7 +708,7 @@ main {
     }
 }
 
-/* Add Modal Styles */
+/* Modal Styles */
 .modal-overlay {
     position: fixed;
     top: 0;
@@ -816,7 +838,7 @@ main {
     color: var(--primary-color);
 }
 
-/* Update textarea styling in modal */
+/* textarea styling in modal */
 .form-group textarea {
     width: 100%;
     padding: 0.75rem 1rem;
@@ -868,12 +890,10 @@ main {
     font-size: 0.9rem;
 }
 
-/* Make modal wider for post creation */
 #createPostModal .modal {
     max-width: 600px;
 }
 
-/* Update create post button */
 .create-post-btn {
     width: 100%;
     padding: 1rem;
@@ -907,7 +927,7 @@ main {
     margin-left: auto;
 }
 
-/* Add auth status styles */
+/* auth status styles */
 .auth-status {
     display: flex;
     align-items: center;
@@ -921,7 +941,7 @@ main {
     margin-right: auto;
 }
 
-/* Style logout button */
+/* logout button */
 .logout-btn {
     border: 1px solid var(--primary-color) !important;
     color: var(--primary-color) !important;
@@ -967,3 +987,24 @@ main {
 .filter-btn:hover {
     background-color: #e0e0e0;
 }
+
+.auth-message {
+    margin-bottom: 1rem;
+    padding: 0.75rem 1rem;
+    border-radius: var(--border-radius);
+    font-size: 0.95rem;
+}
+
+.auth-message.success {
+    background-color: rgba(76, 175, 80, 0.1);
+    color: var(--primary-color);
+    border: 1px solid var(--primary-color);
+}
+
+.auth-message.error {
+    background-color: rgba(244, 67, 54, 0.1);
+    color: #f44336;
+    border: 1px solid #f44336;
+}
+
+/* error message */

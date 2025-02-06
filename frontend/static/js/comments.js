@@ -6,7 +6,9 @@ function renderComments(comments) {
     
     return comments.map(comment => `
         <div class="comment">
-            <p>${comment.content}</p>
+            <div class="comment-content">
+                <p>${comment.content}</p>
+            </div>
             <div class="comment-footer">
                 <small>By ${comment.username} on ${new Date(comment.created_at).toLocaleString()}</small>
                 <div class="comment-actions">
@@ -48,7 +50,16 @@ async function submitComment(postId) {
     }
 
     try {
-        const response = await fetch('/api/protected/api/comments/create', {
+        // First check authentication status
+        const authResponse = await fetch('/api/protected/api/auth/status');
+        const authData = await authResponse.json();
+        
+        if (!authData.authenticated) {
+            handleError('Please login to comment');
+            return;
+        }
+
+        const response = await fetch('/api/protected/api/comments', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -60,19 +71,60 @@ async function submitComment(postId) {
         });
 
         if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.message || 'Failed to create post');
+            throw new Error('Failed to submit comment');
         }
-        handleSuccess('Post created successfully');
-        fetchPosts();
+
+        // Wait for the response before clearing the form
+        await response.json();
+        
+        textarea.value = '';
+        commentForm.style.display = 'none';
+        
+        // Store the current open comments
+        const openComments = new Set();
+        document.querySelectorAll('.comments-container').forEach(container => {
+            if (container.style.display !== 'none') {
+                openComments.add(parseInt(container.id.split('-').pop()));
+            }
+        });
+        
+        // Fetch the updated post data
+        await fetchPosts();
+        
+        // Restore open state of comments
+        openComments.forEach(id => {
+            const container = document.getElementById(`comments-container-${id}`);
+            if (container) {
+                container.style.display = 'block';
+            }
+        });
+        
+        handleSuccess('Comment posted successfully');
     } catch (error) {
         console.error('Error submitting comment:', error);
-        handleError('Please login to comment');
+        handleError('Failed to post comment');
     }
 }
 async function handleCommentLike(commentId, isLike) {
     try {
-        const response = await fetch('/api/protected/api/comments/likes', {
+        // Check authentication first
+        const authResponse = await fetch('/api/protected/api/auth/status');
+        const authData = await authResponse.json();
+        
+        if (!authData.authenticated) {
+            handleError('Please login to like comments');
+            return;
+        }
+
+        // Store the current open comments
+        const openComments = new Set();
+        document.querySelectorAll('.comments-container').forEach(container => {
+            if (container.style.display !== 'none') {
+                openComments.add(parseInt(container.id.split('-').pop()));
+            }
+        });
+
+        const response = await fetch('/api/protected/api/comments/like', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -88,8 +140,18 @@ async function handleCommentLike(commentId, isLike) {
         }
         
         await fetchPosts();
+        
+        // Restore open state of comments
+        openComments.forEach(id => {
+            const container = document.getElementById(`comments-container-${id}`);
+            if (container) {
+                container.style.display = 'block';
+            }
+        });
+        
+        handleSuccess(isLike ? 'Comment liked!' : 'Comment disliked!');
     } catch (error) {
         console.error('Error handling comment like:', error);
-        handleError('Please login to like comments');
+        handleError('Failed to update like');
     }
 } 
