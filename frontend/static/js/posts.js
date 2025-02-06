@@ -3,7 +3,7 @@ let isLoading = false;
 let hasMorePosts = true;
 let currentFilter = '';
 
-async function loadPostCategories() {
+async function loadFilterCategories() {
     try {
         const response = await fetch('/api/categories');
         const categories = await response.json();
@@ -28,9 +28,25 @@ async function loadPostCategories() {
     }
 }
 
+async function loadPostCategories() {
+    try {
+        const response = await fetch('/api/categories');
+        const categories = await response.json();
+        const container = document.getElementById('postCategories');
+        
+        container.innerHTML = categories.map(category => `
+            <label class="category-checkbox">
+                <input type="checkbox" value="${category.id}">
+                <span>${category.name}</span>
+            </label>
+        `).join('');
+    } catch (error) {
+        console.error('Error loading categories:', error);
+    }
+}
+
 async function openCreatePostModal() {
     try {
-        // Check authentication status
         const response = await fetch('/api/protected/api/auth/status');
         const data = await response.json();
 
@@ -290,7 +306,7 @@ function resetPosts() {
 document.addEventListener('DOMContentLoaded', () => {
     resetPosts();
     setupInfiniteScroll();
-    loadPostCategories();
+    loadFilterCategories();
 });
 
 // Update other functions that fetch posts to use resetPosts()
