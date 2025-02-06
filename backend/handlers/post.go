@@ -52,3 +52,21 @@ func GetPostsHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(posts)
 }
+
+func GetSinglePostHandler(w http.ResponseWriter, r *http.Request) {
+	postID := r.URL.Path[len("/api/posts/"):]
+	id, err := strconv.Atoi(postID)
+	if err != nil {
+		http.Error(w, "Invalid post ID", http.StatusBadRequest)
+		return
+	}
+
+	post, err := database.GetPostByID(id)
+	if err != nil {
+		http.Error(w, "Failed to fetch post", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(post)
+}

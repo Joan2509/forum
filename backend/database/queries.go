@@ -57,7 +57,9 @@ func InsertPostCategories(postID int, categories []int) error {
 func GetAllPosts(offset int) ([]models.Post, error) {
 	query := `
 		SELECT 
-			p.id, p.user_id, u.username, p.title, p.content, p.created_at
+			p.id, p.user_id, u.username, p.title, p.content, p.created_at,
+			(SELECT COUNT(*) FROM likes WHERE post_id = p.id AND is_like = 1) as likes,
+			(SELECT COUNT(*) FROM likes WHERE post_id = p.id AND is_like = 0) as dislikes
 		FROM posts p
 		JOIN users u ON p.user_id = u.id
 		ORDER BY p.created_at DESC
@@ -79,6 +81,8 @@ func GetAllPosts(offset int) ([]models.Post, error) {
 			&post.Title,
 			&post.Content,
 			&post.CreatedAt,
+			&post.Likes,
+			&post.Dislikes,
 		)
 		if err != nil {
 			return nil, fmt.Errorf("error scanning post: %v", err)
@@ -88,6 +92,12 @@ func GetAllPosts(offset int) ([]models.Post, error) {
 		categories, err := GetCategoriesByPostID(post.ID)
 		if err == nil {
 			post.Categories = categories
+		}
+
+		// Get comments for each post
+		comments, err := GetCommentsByPostID(post.ID)
+		if err == nil {
+			post.Comments = comments
 		}
 
 		posts = append(posts, post)
@@ -380,4 +390,44 @@ func scanPosts(rows *sql.Rows) ([]models.Post, error) {
 func DeleteUserSessions(userID int) error {
 	_, err := DB.Exec("DELETE FROM sessions WHERE user_id = ?", userID)
 	return err
+}
+
+func GetPostByID(postID int) (models.Post, error) {
+	query := `
+		SELECT 
+			p.id, p.user_id, u.username, p.title, p.content, p.created_at,
+			(SELECT COUNT(*) FROM likes WHERE post_id = p.id AND is_like = 1) as likes,
+			(SELECT COUNT(*) FROM likes WHERE post_id = p.id AND is_like = 0) as dislikes
+		FROM posts p
+		JOIN users u ON p.user_id = u.id
+		WHERE p.id = ?`
+
+	var post models.Post
+	err := DB.QueryRow(query, postID).Scan(
+		&post.ID,
+		&post.UserID,
+		&post.Username,
+		&post.Title,
+		&post.Content,
+		&post.CreatedAt,
+		&post.Likes,
+		&post.Dislikes,
+	)
+	if err != nil {
+		return post, err
+	}
+
+	// Get categories
+	categories, err := GetCategoriesByPostID(post.ID)
+	if err == nil {
+		post.Categories = categories
+	}
+
+	// Get comments
+	comments, err := GetCommentsByPostID(post.ID)
+	if err == nil {
+		post.Comments = comments
+	}
+
+	return post, nil
 }

@@ -41,6 +41,7 @@ async function openCreatePostModal() {
 function createPostElement(post) {
     const postDiv = document.createElement('div');
     postDiv.className = 'post';
+    postDiv.dataset.postId = post.id;
     
     // Truncate content if it's longer than 800 characters
     const isLongPost = post.content.length > 800;
@@ -190,7 +191,6 @@ async function handleCreatePost(event) {
 
 async function handleLike(postId, isLike) {
     try {
-        // Check authentication first
         const authResponse = await fetch('/api/protected/api/auth/status');
         const authData = await authResponse.json();
         
@@ -211,14 +211,14 @@ async function handleLike(postId, isLike) {
         });
 
         if (!response.ok) {
-            throw new Error('Failed to update like');
+            throw new Error('Login to leave a like');
         }
 
-        await fetchPosts();
+        await updatePost(postId);
         handleSuccess(isLike ? 'Post liked!' : 'Post disliked!');
     } catch (error) {
         console.error('Error handling like:', error);
-        handleError('Failed to update like');
+        handleError('Login to like posts');
     }
 }
 
@@ -284,4 +284,75 @@ document.addEventListener('DOMContentLoaded', () => {
 // Update other functions that fetch posts to use resetPosts()
 function applyFilters(filter) {
     resetPosts();
+}
+
+async function submitComment(postId) {
+    const commentForm = document.getElementById(`comment-form-${postId}`);
+    const textarea = commentForm.querySelector('textarea');
+    const content = textarea.value.trim();
+
+    if (!content) {
+        handleError('Comment cannot be empty');
+        return;
+    }
+
+    try {
+        const authResponse = await fetch('/api/protected/api/auth/status');
+        const authData = await authResponse.json();
+        
+        if (!authData.authenticated) {
+            handleError('Please login to comment');
+            return;
+        }
+
+        const response = await fetch('/api/protected/api/comments', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                post_id: postId,
+                content: content
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to submit comment');
+        }
+
+        await response.json();
+        textarea.value = '';
+        commentForm.style.display = 'none';
+        
+        await updatePost(postId);
+        handleSuccess('Comment posted successfully');
+    } catch (error) {
+        console.error('Error submitting comment:', error);
+        handleError('Login to post comment');
+    }
+}
+
+async function updatePost(postId) {
+    try {
+        const response = await fetch(`/api/posts/${postId}`);
+        if (!response.ok) {
+            throw new Error('Failed to fetch updated post');
+        }
+        const updatedPost = await response.json();
+        
+        // Find and update the specific post in the DOM
+        const existingPost = document.querySelector(`.post[data-post-id="${postId}"]`);
+        if (existingPost) {
+            const newPost = createPostElement(updatedPost);
+            // Preserve the comments display state
+            const oldCommentsContainer = existingPost.querySelector('.comments-container');
+            const newCommentsContainer = newPost.querySelector('.comments-container');
+            if (oldCommentsContainer && oldCommentsContainer.style.display === 'block') {
+                newCommentsContainer.style.display = 'block';
+            }
+            existingPost.replaceWith(newPost);
+        }
+    } catch (error) {
+        console.error('Error updating post:', error);
+    }
 }
