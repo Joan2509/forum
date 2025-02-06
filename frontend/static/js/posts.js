@@ -304,6 +304,7 @@ function resetPosts() {
 
 // Called when the page loads
 document.addEventListener('DOMContentLoaded', () => {
+    checkAuth();
     resetPosts();
     setupInfiniteScroll();
     loadFilterCategories();
