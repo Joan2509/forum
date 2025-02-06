@@ -19,29 +19,66 @@ func TestRegisterHandler(t *testing.T) {
 		"email":    "test@example.com",
 		"password": "testpassword",
 	})
-	req := httptest.NewRequest(http.MethodGet, "/register", &buffer)
+	req := httptest.NewRequest(http.MethodGet, "/api/register", &buffer)
 	res.Code = http.StatusOK
 
 	RegisterHandler(res, req)
 	if res.Code != http.StatusCreated {
-		t.Errorf("RegisterHandler() got = %v, want %v", res.Code, http.StatusOK)
+		t.Errorf("RegisterHandler() got = %v, want %v", res.Code, http.StatusCreated)
 	}
 }
 
-// func TestCreatePostHandler(t *testing.T) {
-// 	type args struct {
-// 		w http.ResponseWriter
-// 		r *http.Request
-// 	}
-// 	tests := []struct {
-// 		name string
-// 		args args
-// 	}{
-// 		{},
-// 	}
-// 	for _, tt := range tests {
-// 		t.Run(tt.name, func(t *testing.T) {
-// 			CreatePostHandler(tt.args.w, tt.args.r)
-// 		})
-// 	}
-// }
+func TestLoginHandler(t *testing.T) {
+	// mock response
+	res := httptest.NewRecorder()
+
+	// mock registration request request
+	var buffer bytes.Buffer
+	json.NewEncoder(&buffer).Encode(map[string]string{
+		"username": "testuser",
+		"email":    "test@example.com",
+		"password": "testpassword",
+	})
+	req := httptest.NewRequest(http.MethodGet, "/api/login", &buffer)
+	res.Code = http.StatusOK
+
+	LoginHandler(res, req)
+	if res.Code != http.StatusOK {
+		t.Errorf("LoginHandler() got = %v, want %v", res.Code, http.StatusOK)
+	}
+	if res.Result().Cookies()[0].Value == "" {
+		t.Error("No session token in response")
+	}
+}
+
+func TestLogoutHandler(t *testing.T) {
+	// mock response
+	res := httptest.NewRecorder()
+
+	// mock registration request request
+	var buffer bytes.Buffer
+	json.NewEncoder(&buffer).Encode(map[string]string{
+		"username": "testuser",
+		"email":    "test@example.com",
+		"password": "testpassword",
+	})
+
+	req := httptest.NewRequest(http.MethodGet, "/api/register", &buffer)
+	res.Code = http.StatusOK
+
+	RegisterHandler(res, req)
+	req = httptest.NewRequest(http.MethodGet, "/api/login", &buffer)
+	res.Code = http.StatusOK
+
+	LoginHandler(res, req)
+	req = httptest.NewRequest(http.MethodGet, "/api/protected/api/logout", &buffer)
+	res.Code = http.StatusOK
+
+	LogoutHandler(res, req)
+	if res.Code != http.StatusOK {
+		t.Errorf("LoginHandler() got = %v, want %v", res.Code, http.StatusOK)
+	}
+	if len(res.Result().Cookies())!= 0 {
+        t.Error("Session token still present in response")
+    }
+}
