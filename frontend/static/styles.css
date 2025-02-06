@@ -1008,3 +1008,40 @@ main {
 }
 
 /* error message */
+
+#load-more-trigger {
+    text-align: center;
+    padding: 1rem;
+    margin-top: 1rem;
+}
+
+.load-more-btn {
+    background-color: var(--bg-elevated);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    padding: 0.75rem 1.25rem;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.load-more-btn:hover {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+}
+
+.loading-spinner {
+    display: inline-block;
+    width: 30px;
+    height: 30px;
+    border: 3px solid var(--bg-elevated);
+    border-radius: 50%;
+    border-top-color: var(--primary-color);
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}

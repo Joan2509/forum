@@ -1,3 +1,7 @@
+let currentPage = 1;
+let isLoading = false;
+let hasMorePosts = true;
+
 async function loadPostCategories() {
     try {
         const response = await fetch('/api/categories');
@@ -75,32 +79,52 @@ function createPostElement(post) {
     return postDiv;
 }
 
-async function fetchPosts() {
+async function fetchPosts(append = false) {
+    if (isLoading || (!append && !hasMorePosts)) return;
+    
     try {
-        const response = await fetch('/api/posts');
+        isLoading = true;
+        const response = await fetch(`/api/posts?page=${currentPage}`);
         if (!response.ok) {
             const error = await response.json();
             throw new Error(error.message || 'Failed to fetch posts');
         }
         const posts = await response.json();
+        
+        // Check if we've reached the end
+        if (posts.length < 8) {
+            hasMorePosts = false;
+        }
+
         const postsList = document.getElementById('posts-list');
+        
+        if (!append) {
+            postsList.innerHTML = '';
+        }
 
         if (!posts || posts.length === 0) {
-            postsList.innerHTML = '<p>No posts yet. Be the first to create one!</p>';
+            if (!append) {
+                postsList.innerHTML = '<p>No posts yet. Be the first to create one!</p>';
+            }
+            hasMorePosts = false;
             return;
         }
 
-        postsList.innerHTML = '';
         posts.forEach(post => {
             const postElement = createPostElement(post);
-            postsList.appendChild(postElement)
+            postsList.appendChild(postElement);
         });
+
+        // Re-setup infinite scroll after adding new posts
+        setupInfiniteScroll();
+
     } catch (error) {
-        console.error('Error fetching posts', error);
-        document.getElementById('posts-list').innerHTML = `<p>Error loading posts: ${error.message}</p>`;
+        console.error('Error fetching posts:', error);
+        handleError('Error loading posts: ' + error.message);
+    } finally {
+        isLoading = false;
     }
 }
-
 
 function closeCreatePostModal() {
     document.getElementById('createPostModal').classList.remove('active');
@@ -128,7 +152,7 @@ async function handleCreatePost(event) {
         }
         handleSuccess('Post created successfully');
         closeCreatePostModal();
-        fetchPosts(); // Reload posts
+        resetPosts();
     } catch (e) {
         handleError(e.message)
     }
@@ -166,4 +190,68 @@ async function handleLike(postId, isLike) {
         console.error('Error handling like:', error);
         handleError('Failed to update like');
     }
+}
+
+function setupInfiniteScroll() {
+    // Remove any existing trigger
+    const existingTrigger = document.getElementById('load-more-trigger');
+    if (existingTrigger) {
+        existingTrigger.remove();
+    }
+
+    const loadMoreTrigger = document.createElement('div');
+    loadMoreTrigger.id = 'load-more-trigger';
+    loadMoreTrigger.innerHTML = `
+        <div class="loading-spinner" style="display: none;"></div>
+        <button class="load-more-btn" onclick="loadMorePosts()">Load More</button>
+    `;
+    document.getElementById('posts-list').appendChild(loadMoreTrigger);
+
+    // Set up intersection observer for infinite scroll
+    const observer = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting && hasMorePosts && !isLoading) {
+            loadMorePosts();
+        }
+    }, { threshold: 0.1 });
+
+    observer.observe(loadMoreTrigger);
+}
+
+async function loadMorePosts() {
+    if (isLoading || !hasMorePosts) return;
+    
+    const trigger = document.getElementById('load-more-trigger');
+    const spinner = trigger.querySelector('.loading-spinner');
+    const button = trigger.querySelector('.load-more-btn');
+    
+    spinner.style.display = 'inline-block';
+    button.style.display = 'none';
+    
+    currentPage++;
+    await fetchPosts(true);
+    
+    spinner.style.display = 'none';
+    button.style.display = hasMorePosts ? 'inline-block' : 'none';
+    
+    if (!hasMorePosts) {
+        trigger.innerHTML = '<p>No more posts to load</p>';
+    }
+}
+
+// Update the existing functions
+function resetPosts() {
+    currentPage = 1;
+    hasMorePosts = true;
+    fetchPosts(false);
+}
+
+// Call this when the page loads
+document.addEventListener('DOMContentLoaded', () => {
+    resetPosts();
+    setupInfiniteScroll();
+});
+
+// Update other functions that fetch posts to use resetPosts()
+function applyFilters(filter) {
+    resetPosts();
 }

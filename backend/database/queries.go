@@ -8,6 +8,11 @@ import (
 	"forum/models"
 )
 
+// Add these constants at the top of the file
+const (
+	PostsPerPage = 8
+)
+
 // Insert a new user
 func CreateUser(user models.User) error {
 	_, err := DB.Exec("INSERT INTO users (username, email, password) VALUES (?, ?, ?)", user.Username, user.Email, user.Password)
@@ -48,16 +53,17 @@ func InsertPostCategories(postID int, categories []int) error {
 	return nil
 }
 
-// Get all posts
-func GetAllPosts() ([]models.Post, error) {
+// Update GetAllPosts to support pagination
+func GetAllPosts(offset int) ([]models.Post, error) {
 	query := `
 		SELECT 
 			p.id, p.user_id, u.username, p.title, p.content, p.created_at
 		FROM posts p
 		JOIN users u ON p.user_id = u.id
-		ORDER BY p.created_at DESC`
+		ORDER BY p.created_at DESC
+		LIMIT ? OFFSET ?`
 
-	rows, err := DB.Query(query)
+	rows, err := DB.Query(query, PostsPerPage, offset)
 	if err != nil {
 		return nil, fmt.Errorf("error querying posts: %v", err)
 	}
@@ -85,10 +91,6 @@ func GetAllPosts() ([]models.Post, error) {
 		}
 
 		posts = append(posts, post)
-	}
-
-	if err = rows.Err(); err != nil {
-		return nil, fmt.Errorf("error iterating posts: %v", err)
 	}
 
 	return posts, nil
