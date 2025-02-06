@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"forum/database"
+	"forum/utils"
 )
 
 type contextKey string
@@ -22,8 +23,7 @@ func AuthMiddleware(next http.Handler) http.Handler {
 		// Get the session token from the cookie
 		cookie, err := r.Cookie("session_token")
 		if err != nil {
-			w.WriteHeader(http.StatusUnauthorized)
-			json.NewEncoder(w).Encode(map[string]string{"message": "Unauthorized: No session token"})
+			utils.RenderErrorPage(w, http.StatusUnauthorized)
 			return
 		}
 
@@ -61,7 +61,7 @@ func AuthMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-// GetUserID helper function to get user ID from context
+// helps get user ID from context
 func GetUserID(r *http.Request) (int, bool) {
 	userID, ok := r.Context().Value(UserIDKey).(int)
 	return userID, ok

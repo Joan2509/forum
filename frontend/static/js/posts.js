@@ -1,4 +1,3 @@
-
 async function loadPostCategories() {
     try {
         const response = await fetch('/api/categories');
@@ -86,7 +85,7 @@ async function fetchPosts() {
         const posts = await response.json();
         const postsList = document.getElementById('posts-list');
 
-        if (!posts || posts.length === 0) {
+        if (postsList.length === 0) {
             postsList.innerHTML = '<p>No posts yet. Be the first to create one!</p>';
             return;
         }
@@ -137,21 +136,34 @@ async function handleCreatePost(event) {
 
 async function handleLike(postId, isLike) {
     try {
-        const response = await fetch("/api/protected/api/posts/likes", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({post_id: postId, is_like: isLike}),
-        })
-        if (response.ok) {
-            fetchPosts()
-        } else {
-            const error = await response.json()
-            throw new Error(error.message || "Failed to update like")
+        // Check authentication first
+        const authResponse = await fetch('/api/protected/api/auth/status');
+        const authData = await authResponse.json();
+        
+        if (!authData.authenticated) {
+            handleError('Please login to like posts');
+            return;
         }
-    } catch (e) {
-        console.error("Error handling like:", e)
-        handleError("Please login to like posts")
+
+        const response = await fetch('/api/protected/api/likes', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                post_id: postId,
+                is_like: isLike
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to update like');
+        }
+
+        await fetchPosts();
+        handleSuccess(isLike ? 'Post liked!' : 'Post disliked!');
+    } catch (error) {
+        console.error('Error handling like:', error);
+        handleError('Failed to update like');
     }
 }

@@ -159,7 +159,6 @@ func GetCommentsByPostID(postID int) ([]models.Comment, error) {
 
 // Insert a like/dislike
 func CreateLikeDislike(like models.LikeDislike) error {
-	// First check if user already liked/disliked
 	var existingID int
 	err := DB.QueryRow(
 		"SELECT id FROM likes WHERE user_id = ? AND post_id = ?",
@@ -170,7 +169,7 @@ func CreateLikeDislike(like models.LikeDislike) error {
 		// Create new like
 		_, err = DB.Exec(
 			"INSERT INTO likes (user_id, post_id, is_like) VALUES (?, ?, ?)",
-			like.UserID, like.PostID, map[bool]int{true: 1, false: 0}[like.IsLike],
+			like.UserID, like.PostID, like.IsLike,
 		)
 		return err
 	}
@@ -182,7 +181,7 @@ func CreateLikeDislike(like models.LikeDislike) error {
 	// Update existing like
 	_, err = DB.Exec(
 		"UPDATE likes SET is_like = ? WHERE id = ?",
-		map[bool]int{true: 1, false: 0}[like.IsLike], existingID,
+		like.IsLike, existingID,
 	)
 	return err
 }
@@ -373,4 +372,10 @@ func scanPosts(rows *sql.Rows) ([]models.Post, error) {
 		posts = append(posts, post)
 	}
 	return posts, nil
+}
+
+// DeleteUserSessions removes all existing sessions for a user
+func DeleteUserSessions(userID int) error {
+	_, err := DB.Exec("DELETE FROM sessions WHERE user_id = ?", userID)
+	return err
 }
