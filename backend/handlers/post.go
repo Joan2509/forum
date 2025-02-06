@@ -35,6 +35,8 @@ func CreatePostHandler(w http.ResponseWriter, r *http.Request) {
 func GetPostsHandler(w http.ResponseWriter, r *http.Request) {
 	// Get page from query parameters
 	page := r.URL.Query().Get("page")
+	filter := r.URL.Query().Get("filter")
+	
 	pageNum := 1
 	if page != "" {
 		if num, err := strconv.Atoi(page); err == nil {
@@ -43,7 +45,9 @@ func GetPostsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	offset := (pageNum - 1) * database.PostsPerPage
-	posts, err := database.GetAllPosts(offset)
+	userID, _ := middleware.GetUserID(r)
+
+	posts, err := database.GetAllPosts(offset, filter, userID)
 	if err != nil {
 		http.Error(w, "Failed to fetch posts", http.StatusInternalServerError)
 		return
