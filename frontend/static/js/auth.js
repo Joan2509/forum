@@ -40,6 +40,15 @@ function toggleAuthMode() {
     isLoginMode = !isLoginMode;
     openAuthModal(isLoginMode ? 'login' : 'register');
 }
+function validatePassword(password) {
+    const minLength = 8;
+    const hasAlphanumeric = /[a-zA-Z]/.test(password) && /\d/.test(password);
+    const hasAllowedSpecialChar = /^[a-zA-Z0-9@#]*$/.test(password);
+
+    if (password.length < minLength || !hasAlphanumeric || !hasAllowedSpecialChar) {
+        throw new Error('Password must be at least 8 characters long, include alphanumeric characters, and may contain special characters @ or #.');
+    }
+}
 async function handleAuth(event) {
     event.preventDefault();
     const email = document.getElementById('email').value;
@@ -47,6 +56,7 @@ async function handleAuth(event) {
     const username = document.getElementById('username').value;
 
     try {
+        validatePassword(password);
         const response = await fetch(`/api/${isLoginMode ? 'login' : 'register'}`, {
             method: 'POST',
             headers: {
