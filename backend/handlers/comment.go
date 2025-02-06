@@ -5,8 +5,8 @@ import (
 	"net/http"
 
 	"forum/database"
-	"forum/models"
 	"forum/middleware"
+	"forum/models"
 )
 
 func CreateCommentHandler(w http.ResponseWriter, r *http.Request) {
@@ -48,7 +48,7 @@ func CreateCommentLikeHandler(w http.ResponseWriter, r *http.Request) {
 		CommentID int  `json:"comment_id"`
 		IsLike    bool `json:"is_like"`
 	}
-	
+
 	if err := json.NewDecoder(r.Body).Decode(&like); err != nil {
 		http.Error(w, "Invalid request payload", http.StatusBadRequest)
 		return
@@ -61,7 +61,6 @@ func CreateCommentLikeHandler(w http.ResponseWriter, r *http.Request) {
 		ON CONFLICT(user_id, comment_id)
 		DO UPDATE SET is_like = ?`,
 		userID, like.CommentID, like.IsLike, like.IsLike)
-
 	if err != nil {
 		http.Error(w, "Failed to update comment like", http.StatusInternalServerError)
 		return

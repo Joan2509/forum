@@ -5,8 +5,8 @@ import (
 	"net/http"
 
 	"forum/database"
-	"forum/models"
 	"forum/middleware"
+	"forum/models"
 )
 
 func CreateLikeDislikeHandler(w http.ResponseWriter, r *http.Request) {
