@@ -194,37 +194,44 @@ async function handleAuth(event) {
             })
         });
 
-        const data = await response.json();
+        let data;
+        try {
+            data = await response.json(); // Safely parse JSON
+        } catch (jsonError) {
+            console.error("JSON Parse Error:", jsonError);
+            data = {}; // Ensure `data` is at least an empty object
+        }
+
+        console.log("Response Status:", response.status);
+        console.log("Response Data:", data);
 
         if (!response.ok) {
-            // Handle specific error cases
-            switch (response.status) {
-                case 409: 
-                    showAuthError('This username or email is already taken');
-                    break;
-                case 401:
-                    showAuthError('Wrong email or password');
-                    break;
-                default:
-                    showAuthError(data.message || 'Authentication failed');
+            if (response.status === 401) {
+                console.log("Triggering: Wrong email or password"); // Debug log
+                showAuthError("Wrong email or password");
+                return;
+
+            } else {
+                showAuthError(data?.message || "Authentication failed");
+                return;
             }
-            return;
         }
 
         if (isLoginMode) {
-            handleSuccess('Login successful!');
+            handleSuccess("Login successful!");
             closeAuthModal();
             startAuthStatusCheck();
             window.location.reload();
         } else {
-            // Fswitch to login mode
-            document.getElementById('authForm').reset();
-            openAuthModal('login', 'Registration successful! Please login with your credentials.');
+            document.getElementById("authForm").reset();
+            openAuthModal("login", "Registration successful! Please login with your credentials.");
         }
     } catch (error) {
-        showAuthError('An error occurred. Please try again.');
+        console.error("Login Error:", error);
+        showAuthError("An error occurred. Please try again.");
     }
 }
+
 
 async function logout() {
     try {
