@@ -147,18 +147,7 @@ async function fetchPosts(append = false) {
             throw new Error(error.message || 'Failed to fetch posts');
         }
         const posts = await response.json();
-        
-        // Check if we've reached the end
-        if (posts.length < 8) {
-            hasMorePosts = false;
-        }
-
         const postsList = document.getElementById('posts-list');
-        
-        if (!append) {
-            postsList.innerHTML = '';
-        }
-
         if (!posts || posts.length === 0) {
             if (!append) {
                 postsList.innerHTML = '<p>No posts yet. Be the first to create one!</p>';
@@ -166,6 +155,17 @@ async function fetchPosts(append = false) {
             hasMorePosts = false;
             return;
         }
+        
+        // Check if we've reached the end
+        if (posts.length < 8) {
+            hasMorePosts = false;
+        }
+        
+        if (!append) {
+            postsList.innerHTML = '';
+        }
+
+     
 
         posts.forEach(post => {
             const postElement = createPostElement(post);
