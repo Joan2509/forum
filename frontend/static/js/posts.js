@@ -147,17 +147,8 @@ async function fetchPosts(append = false) {
             throw new Error(error.message || 'Failed to fetch posts');
         }
         const posts = await response.json();
-        
-        // Check if we've reached the end
-        if (posts.length < 8) {
-            hasMorePosts = false;
-        }
 
         const postsList = document.getElementById('posts-list');
-        
-        if (!append) {
-            postsList.innerHTML = '';
-        }
 
         if (!posts || posts.length === 0) {
             if (!append) {
@@ -165,6 +156,15 @@ async function fetchPosts(append = false) {
             }
             hasMorePosts = false;
             return;
+        }
+        
+        // Check if we've reached the end
+        if (posts.length < 8) {
+            hasMorePosts = false;
+        }
+
+        if (!append) {
+            postsList.innerHTML = '';
         }
 
         posts.forEach(post => {
@@ -176,7 +176,7 @@ async function fetchPosts(append = false) {
         setupInfiniteScroll();
 
     } catch (error) {
-        console.error('Error fetching posts:', error);
+        console.error('Error fetching posts:', error);    
         handleError('Error loading posts: ' + error.message);
     } finally {
         isLoading = false;
