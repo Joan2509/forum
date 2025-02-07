@@ -1,2 +1,5 @@
 #Ignore Compiled Files
 backend/forum.db
+
+backend/handlers/test_forum.db
+backend/database/test_forum.db
