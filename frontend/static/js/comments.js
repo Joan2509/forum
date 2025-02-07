@@ -1,7 +1,7 @@
 // Comments related functions
 function renderComments(comments) {
     if (!Array.isArray(comments) || comments.length === 0) {
-        return '<p class="no-comments">No comments yet</p>';
+        return '<p class="no-comments">No comments yet</p></br>';
     }
     
     return comments.map(comment => `

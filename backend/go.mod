@@ -1,6 +1,6 @@
 module forum
 
-go 1.23
+go 1.22.6
 
 require (
 	github.com/bxcodec/faker/v3 v3.8.1
