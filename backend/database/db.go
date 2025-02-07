@@ -19,6 +19,7 @@ func InitDB(dbname string) (err error) {
 	if err != nil {
 		return
 	}
+	fakePosts(dbname)
 	log.Println("Database initialized successfully")
 	return
 }
