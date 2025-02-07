@@ -1180,3 +1180,98 @@ main {
 .password-requirements li.valid i {
     color: var(--primary-color);
 }
+
+/* Add these styles */
+.stats-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.stat-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.75rem;
+    background-color: var(--bg-elevated);
+    border-radius: var(--border-radius);
+    transition: transform 0.2s ease;
+}
+
+.stat-item:hover {
+    transform: translateY(-2px);
+}
+
+.stat-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+}
+
+.stat-icon.likes {
+    background-color: rgba(244, 67, 54, 0.1);
+    color: #f44336;
+}
+
+.stat-icon.comments {
+    background-color: rgba(76, 175, 80, 0.1);
+    color: var(--primary-color);
+}
+
+.stat-icon.posts {
+    background-color: rgba(33, 150, 243, 0.1);
+    color: #2196f3;
+}
+
+.stat-details {
+    display: flex;
+    flex-direction: column;
+}
+
+.stat-value {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.stat-label {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.stat-category {
+    padding: 0.75rem;
+    background-color: var(--bg-elevated);
+    border-radius: var(--border-radius);
+    margin-top: 0.5rem;
+}
+
+.stat-category h4 {
+    color: var(--text-primary);
+    font-size: 0.95rem;
+    margin-bottom: 0.5rem;
+}
+
+.category-stat {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.category-name {
+    color: var(--primary-color);
+    font-weight: 500;
+}
+
+.category-count {
+    background-color: var(--bg-dark);
+    padding: 0.25rem 0.5rem;
+    border-radius: 12px;
+    font-size: 0.8rem;
+}
