@@ -1,5 +1,5 @@
 # Use the official Golang image from the Docker Hub
-FROM golang:1.19-alpine
+FROM golang:1.23
 
 # Set the working directory inside the container
 WORKDIR /app
@@ -8,7 +8,7 @@ WORKDIR /app
 COPY backend/ .
 
 # Download dependencies
-RUN go mod download
+RUN go mod tidy
 
 # Build the Go application
 RUN go build -o forum
