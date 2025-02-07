@@ -9,20 +9,58 @@ async function loadFilterCategories() {
         const categories = await response.json();
         const container = document.getElementById('categoryFilter');
         
-        container.innerHTML = categories.map(category => `
+        // category icons
+        const categoryIcons = {
+            "Technology": "fas fa-laptop-code",
+            "Sports": "fas fa-football-ball",
+            "Entertainment": "fas fa-film",
+            "Science": "fas fa-flask",
+            "Politics": "fas fa-landmark",
+            "Health": "fas fa-heartbeat",
+            "Travel": "fas fa-plane",
+            "Food": "fas fa-utensils",
+            "Other": "fas fa-question-circle"
+        };
+
+        // All Categories button
+        container.innerHTML = `
             <button 
-                onclick="applyCategoryFilter('${category.id}')" 
-                class="category-filter-btn"
-                data-category="${category.id}">
-                ${category.name}
-            </button>
-        `).join('') + `
-            <button 
-                onclick="applyCategoryFilter('')" 
-                class="category-filter-btn">
-                All Categories
+                class="category-filter-btn active"
+                data-category="all">
+                <i class="fas fa-list"></i> All Categories
             </button>
         `;
+
+        // Tother categories buttons
+        container.innerHTML += categories.map(category => `
+            <button 
+                class="category-filter-btn"
+                data-category="${category.id}">
+                <i class="${categoryIcons[category.name] || 'fas fa-tag'}"></i> ${category.name}
+            </button>
+        `).join('');
+
+        // active state on click management
+        container.querySelectorAll(".category-filter-btn").forEach(button => {
+            button.addEventListener("click", function() {
+
+                container.querySelectorAll(".category-filter-btn").forEach(btn => btn.classList.remove("active"));
+                
+                this.classList.add("active");
+                
+                if (this.dataset.category === 'all') {
+                    currentFilter = ''; 
+                    currentPage = 1;
+                    hasMorePosts = true;
+                    fetchPosts(false);
+                } else {
+                    applyCategoryFilter(this.dataset.category);
+                }
+            });
+        });
+
+        fetchPosts();
+
     } catch (error) {
         console.error('Error loading categories:', error);
     }
