@@ -8,6 +8,10 @@ import (
 	"forum/models"
 )
 
+const (
+	PostsPerPage = 8
+)
+
 // Insert a new user
 func CreateUser(user models.User) error {
 	_, err := DB.Exec("INSERT INTO users (username, email, password) VALUES (?, ?, ?)", user.Username, user.Email, user.Password)
@@ -48,16 +52,70 @@ func InsertPostCategories(postID int, categories []int) error {
 	return nil
 }
 
-// Get all posts
-func GetAllPosts() ([]models.Post, error) {
-	query := `
-		SELECT 
-			p.id, p.user_id, u.username, p.title, p.content, p.created_at
-		FROM posts p
-		JOIN users u ON p.user_id = u.id
-		ORDER BY p.created_at DESC`
+// GetAllPosts with support for pagination
+func GetAllPosts(offset int, filter string, userID int) ([]models.Post, error) {
+	var query string
+	var args []interface{}
 
-	rows, err := DB.Query(query)
+	// Check if filter is a category filter
+	if len(filter) > 9 && filter[:9] == "category-" {
+		categoryID := filter[9:]
+		query = `
+			SELECT DISTINCT
+				p.id, p.user_id, u.username, p.title, p.content, p.created_at,
+				(SELECT COUNT(*) FROM likes WHERE post_id = p.id AND is_like = 1) as likes,
+				(SELECT COUNT(*) FROM likes WHERE post_id = p.id AND is_like = 0) as dislikes
+			FROM posts p
+			JOIN users u ON p.user_id = u.id
+			JOIN post_categories pc ON p.id = pc.post_id
+			WHERE pc.category_id = ?
+			ORDER BY p.created_at DESC
+			LIMIT ? OFFSET ?`
+		args = []interface{}{categoryID, PostsPerPage, offset}
+	} else {
+		switch filter {
+		case "my-posts":
+			query = `
+				SELECT DISTINCT
+					p.id, p.user_id, u.username, p.title, p.content, p.created_at,
+					(SELECT COUNT(*) FROM likes WHERE post_id = p.id AND is_like = 1) as likes,
+					(SELECT COUNT(*) FROM likes WHERE post_id = p.id AND is_like = 0) as dislikes
+				FROM posts p
+				JOIN users u ON p.user_id = u.id
+				WHERE p.user_id = ?
+				ORDER BY p.created_at DESC
+				LIMIT ? OFFSET ?`
+			args = []interface{}{userID, PostsPerPage, offset}
+
+		case "liked-posts":
+			query = `
+				SELECT DISTINCT
+					p.id, p.user_id, u.username, p.title, p.content, p.created_at,
+					(SELECT COUNT(*) FROM likes WHERE post_id = p.id AND is_like = 1) as likes,
+					(SELECT COUNT(*) FROM likes WHERE post_id = p.id AND is_like = 0) as dislikes
+				FROM posts p
+				JOIN users u ON p.user_id = u.id
+				JOIN likes l ON p.id = l.post_id
+				WHERE l.user_id = ? AND l.is_like = 1
+				ORDER BY p.created_at DESC
+				LIMIT ? OFFSET ?`
+			args = []interface{}{userID, PostsPerPage, offset}
+
+		default:
+			query = `
+				SELECT DISTINCT
+					p.id, p.user_id, u.username, p.title, p.content, p.created_at,
+					(SELECT COUNT(*) FROM likes WHERE post_id = p.id AND is_like = 1) as likes,
+					(SELECT COUNT(*) FROM likes WHERE post_id = p.id AND is_like = 0) as dislikes
+				FROM posts p
+				JOIN users u ON p.user_id = u.id
+				ORDER BY p.created_at DESC
+				LIMIT ? OFFSET ?`
+			args = []interface{}{PostsPerPage, offset}
+		}
+	}
+
+	rows, err := DB.Query(query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("error querying posts: %v", err)
 	}
@@ -73,6 +131,8 @@ func GetAllPosts() ([]models.Post, error) {
 			&post.Title,
 			&post.Content,
 			&post.CreatedAt,
+			&post.Likes,
+			&post.Dislikes,
 		)
 		if err != nil {
 			return nil, fmt.Errorf("error scanning post: %v", err)
@@ -84,11 +144,13 @@ func GetAllPosts() ([]models.Post, error) {
 			post.Categories = categories
 		}
 
-		posts = append(posts, post)
-	}
+		// Get comments for each post
+		comments, err := GetCommentsByPostID(post.ID)
+		if err == nil {
+			post.Comments = comments
+		}
 
-	if err = rows.Err(); err != nil {
-		return nil, fmt.Errorf("error iterating posts: %v", err)
+		posts = append(posts, post)
 	}
 
 	return posts, nil
@@ -378,4 +440,44 @@ func scanPosts(rows *sql.Rows) ([]models.Post, error) {
 func DeleteUserSessions(userID int) error {
 	_, err := DB.Exec("DELETE FROM sessions WHERE user_id = ?", userID)
 	return err
+}
+
+func GetPostByID(postID int) (models.Post, error) {
+	query := `
+		SELECT 
+			p.id, p.user_id, u.username, p.title, p.content, p.created_at,
+			(SELECT COUNT(*) FROM likes WHERE post_id = p.id AND is_like = 1) as likes,
+			(SELECT COUNT(*) FROM likes WHERE post_id = p.id AND is_like = 0) as dislikes
+		FROM posts p
+		JOIN users u ON p.user_id = u.id
+		WHERE p.id = ?`
+
+	var post models.Post
+	err := DB.QueryRow(query, postID).Scan(
+		&post.ID,
+		&post.UserID,
+		&post.Username,
+		&post.Title,
+		&post.Content,
+		&post.CreatedAt,
+		&post.Likes,
+		&post.Dislikes,
+	)
+	if err != nil {
+		return post, err
+	}
+
+	// Get categories
+	categories, err := GetCategoriesByPostID(post.ID)
+	if err == nil {
+		post.Categories = categories
+	}
+
+	// Get comments
+	comments, err := GetCommentsByPostID(post.ID)
+	if err == nil {
+		post.Comments = comments
+	}
+
+	return post, nil
 }

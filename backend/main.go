@@ -61,6 +61,7 @@ func main() {
 	http.HandleFunc("/api/register", handlers.RegisterHandler)
 	http.HandleFunc("/api/posts", handlers.GetPostsHandler) // Public GET endpoint
 	http.HandleFunc("/api/categories", handlers.GetCategoriesHandler)
+	http.HandleFunc("/api/posts/", handlers.GetSinglePostHandler)
 	// Protected API routes
 	protectedMux := http.NewServeMux()
 	protectedMux.HandleFunc("/api/logout", handlers.LogoutHandler)
