@@ -12,7 +12,7 @@ import (
 )
 
 var categories = []string{
-	"Technology", "Sports", "Entertainment", "Science", "Politics", "Health", "Travel",
+	"Technology", "Sports", "Entertainment", "Science", "Politics", "Health", "Travel", "Food", "Other",
 }
 
 func fakePosts(dbname string) {
@@ -57,12 +57,12 @@ func fakePosts(dbname string) {
 		category := []int{rand.Intn(len(categories))}
 		// Pick a random user_id from the previously inserted users
 		userId := userIds[rand.Intn(len(userIds))]
-
+		
 		// Insert into the posts table
 		post := models.Post{
-			UserID:        userId,
-			Title:         title,
-			Content:       content,
+			UserID: userId,
+			Title: title,
+			Content: content,
 			RawCategories: category,
 		}
 		err := CreatePost(post)
