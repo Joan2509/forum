@@ -1181,40 +1181,74 @@ main {
     color: var(--primary-color);
 }
 
-/* Add these styles */
+/* Stats Section*/
 .stats-container {
     display: flex;
     flex-direction: column;
-    gap: 1rem;
+    gap: 1.2rem;
+    padding: 0.5rem;
 }
 
 .stat-item {
     display: flex;
     align-items: center;
-    gap: 1rem;
-    padding: 0.75rem;
+    gap: 1.2rem;
+    padding: 1rem;
     background-color: var(--bg-elevated);
     border-radius: var(--border-radius);
-    transition: transform 0.2s ease;
+    transition: all 0.3s ease;
+    border: 1px solid var(--border-color);
+    position: relative;
+    overflow: hidden;
 }
 
 .stat-item:hover {
-    transform: translateY(-2px);
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.stat-item.likes::before {
+    background-color: #ffd700;
+}
+
+.stat-item.comments::before {
+    background-color: var(--primary-color);
+}
+
+.stat-item.posts::before {
+    background-color: #f3f021;
 }
 
 .stat-icon {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
+    width: 45px;
+    height: 45px;
+    border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.2rem;
+    font-size: 1.3rem;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.stat-icon::after {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: 12px;
+    opacity: 0.2;
+    z-index: -1;
+    transition: all 0.3s ease;
+}
+
+.stat-item:hover .stat-icon {
+    transform: scale(1.1);
 }
 
 .stat-icon.likes {
-    background-color: rgba(244, 67, 54, 0.1);
-    color: #f44336;
+    background-color: rgba(255, 215, 0, 0.1);
+    color: #ffd700;
 }
 
 .stat-icon.comments {
@@ -1223,55 +1257,101 @@ main {
 }
 
 .stat-icon.posts {
-    background-color: rgba(33, 150, 243, 0.1);
-    color: #2196f3;
+    background-color: rgba(100, 243, 33, 0.1);
+    color: #ffd700;
 }
 
 .stat-details {
     display: flex;
     flex-direction: column;
+    gap: 0.3rem;
+    flex: 1;
 }
 
 .stat-value {
-    font-size: 1.2rem;
-    font-weight: 600;
+    font-size: 1.4rem;
+    font-weight: 700;
     color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.stat-value::after {
+    content: '';
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: var(--primary-color);
+    animation: pulse 2s infinite;
 }
 
 .stat-label {
-    font-size: 0.85rem;
+    font-size: 0.9rem;
     color: var(--text-secondary);
-}
-
-.stat-category {
-    padding: 0.75rem;
-    background-color: var(--bg-elevated);
-    border-radius: var(--border-radius);
-    margin-top: 0.5rem;
+    letter-spacing: 0.5px;
 }
 
 .stat-category h4 {
     color: var(--text-primary);
-    font-size: 0.95rem;
-    margin-bottom: 0.5rem;
-}
-
-.category-stat {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    color: var(--text-secondary);
-    font-size: 0.9rem;
+    font-size: 1rem;
+    margin-bottom: 1rem;
+    justify-content: center;
+    font-weight: 300;
 }
 
 .category-name {
     color: var(--primary-color);
-    font-weight: 500;
+    font-weight: 600;
+    font-size: 1.1rem;
+    display: inline;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.category-name::before {
+    content: '#';
+    color: var(--primary-color);
 }
 
 .category-count {
-    background-color: var(--bg-dark);
-    padding: 0.25rem 0.5rem;
-    border-radius: 12px;
-    font-size: 0.8rem;
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    font-weight: 500;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+        opacity: 0.5;
+    }
+    50% {
+        transform: scale(1.2);
+        opacity: 0.8;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 0.5;
+    }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .stat-item {
+        padding: 0.8rem;
+    }
+    
+    .stat-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 1.1rem;
+    }
+    
+    .stat-value {
+        font-size: 1.2rem;
+    }
+    
+    .stat-label {
+        font-size: 0.8rem;
+    }
 }
