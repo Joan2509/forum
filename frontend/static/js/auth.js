@@ -196,25 +196,23 @@ async function handleAuth(event) {
 
         let data;
         try {
-            data = await response.json(); // Safely parse JSON
+            data = await response.json();
         } catch (jsonError) {
             console.error("JSON Parse Error:", jsonError);
-            data = {}; // Ensure `data` is at least an empty object
+            data = {};
         }
 
-        console.log("Response Status:", response.status);
-        console.log("Response Data:", data);
-
         if (!response.ok) {
-            if (response.status === 401) {
-                console.log("Triggering: Wrong email or password"); // Debug log
-                showAuthError("Wrong email or password");
-                return;
-
-            } else {
-                showAuthError(data?.message || "Authentication failed");
+            if (response.status === 405) {
+                showAuthError("Invalid request method");
                 return;
             }
+            if (response.status === 401) {
+                showAuthError("Wrong email or password");
+                return;
+            }
+            showAuthError(data?.message || "Authentication failed");
+            return;
         }
 
         if (isLoginMode) {
@@ -232,13 +230,27 @@ async function handleAuth(event) {
     }
 }
 
-
 async function logout() {
     try {
-        await fetch('/api/protected/api/logout', { method: 'POST' });
+        const response = await fetch('/api/protected/api/logout', { 
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (!response.ok) {
+            if (response.status === 405) {
+                handleError("Invalid request method");
+                return;
+            }
+            throw new Error('Logout failed');
+        }
+
         window.location.reload();
     } catch (error) {
         console.error('Error logging out:', error);
+        handleError('Failed to logout. Please try again.');
     }
 }
 
