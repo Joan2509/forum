@@ -1355,3 +1355,54 @@ main {
         font-size: 0.8rem;
     }
 }
+
+/* Social Media Section */
+.social-links {
+    display: flex;
+    justify-content: center;
+    gap: 1.2rem;
+    padding: 1rem 0;
+}
+
+.social-link {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background-color: var(--bg-elevated);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.social-link i {
+    font-size: 1.2rem;
+}
+
+/* Hover effects */
+.social-link.github:hover {
+    background-color: #24292e;
+    color: white;
+    transform: translateY(-3px);
+}
+
+.social-link.twitter:hover {
+    background-color: #1DA1F2;
+    color: white;
+    transform: translateY(-3px);
+}
+
+.social-link.linkedin:hover {
+    background-color: #0077b5;
+    color: white;
+    transform: translateY(-3px);
+}
+
+.social-link.discord:hover {
+    background-color: #7289DA;
+    color: white;
+    transform: translateY(-3px);
+}
