@@ -11,6 +11,10 @@ import (
 )
 
 func CreatePostHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
 	userId, ok := middleware.GetUserID(r)
 	if !ok {
 		http.Error(w, "Unauthorized: No user ID", http.StatusUnauthorized)
@@ -33,10 +37,14 @@ func CreatePostHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetPostsHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
 	// Get page from query parameters
 	page := r.URL.Query().Get("page")
 	filter := r.URL.Query().Get("filter")
-	
+
 	pageNum := 1
 	if page != "" {
 		if num, err := strconv.Atoi(page); err == nil {
@@ -58,6 +66,10 @@ func GetPostsHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetSinglePostHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
 	postID := r.URL.Path[len("/api/posts/"):]
 	id, err := strconv.Atoi(postID)
 	if err != nil {
