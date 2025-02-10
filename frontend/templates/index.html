@@ -6,10 +6,8 @@
 	<title>Forum</title>
 	<link rel="stylesheet" href="/static/styles.css">
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <script src="/static/script.js" defer></script>
 </head>
 <body>
-	  
 	<header>
 		<nav>
 			<div class="nav-left">
@@ -45,7 +43,6 @@
 	</div>
 	<div class="sidebar-overlay" id="overlay"></div>
 
-
 	<main>
 		<aside class="sidebar-left">
 			<div class="user-filters" id="userFilters">
@@ -74,8 +71,8 @@
 				<h2>Recent Posts</h2>
 				<div class="sort-options">
 					<select onchange="sortPosts(this.value)">
-						<option value="recent">Most Recent</option>
-						<option value="popular">Most Popular</option>
+						<option value="popular">All Posts</option>
+						<option value="popular">Most Liked</option>
 						<option value="commented">Most Commented</option>
 					</select>
 				</div>
@@ -90,12 +87,25 @@
 				<i class="fas fa-plus"></i> Create Post
 			</button>
 			<div class="trending-section">
-				<h3>Trending Topics</h3>
+				<h3>Quick Forum Stats</h3>
 				<!-- Trending -->
 			</div>
 			<div class="online-users">
-				<h3>Online Users</h3>
-				<!-- Online -->
+				<h3>Follow Us</h3>
+				<div class="social-links">
+					<a href="https://github.com/#" target="_blank" class="social-link github">
+						<i class="fab fa-github"></i>
+					</a>
+					<a href="https://twitter.com/#" target="_blank" class="social-link twitter">
+						<i class="fab fa-twitter"></i>
+					</a>
+					<a href="https://linkedin.com/in/#" target="_blank" class="social-link linkedin">
+						<i class="fab fa-linkedin"></i>
+					</a>
+					<a href="https://discord.gg/#" target="_blank" class="social-link discord">
+						<i class="fab fa-discord"></i>
+					</a>
+				</div>
 			</div>
 		</aside>
 	</main>
@@ -124,6 +134,10 @@
 						<label for="email">Email</label>
 						<input type="email" id="email" required>
 					</div>
+					<div class="form-group" id="usernameGroup" style="display: none;">
+						<label for="username">Username</label>
+						<input type="text" id="username">
+					</div>
 					<div class="form-group">
 						<label for="password">Password</label>
 						<input type="password" id="password" oninput="checkPasswordStrength(this.value)" required>
@@ -134,10 +148,7 @@
 							<span id="strength-text" class="strength-text"></span>
 						</div>
 					</div>
-					<div class="form-group" id="usernameGroup" style="display: none;">
-						<label for="username">Username</label>
-						<input type="text" id="username">
-					</div>
+
 				</form>
 			</div>
 			<div class="modal-footer">
@@ -169,6 +180,7 @@
 							<!-- Categories -->
 						</div>
 					</div>
+					<div id="post-error-message" class="error-message" style="display: none;"></div>
 				</form>
 			</div>
 			<div class="modal-footer">
@@ -183,5 +195,6 @@
 	<script src="/static/js/posts.js"></script>
 	<script src="/static/js/filters.js"></script>
 	<script src="/static/js/main.js"></script>
+	<script src="/static/js/stats.js"></script>
 </body>
 </html>
