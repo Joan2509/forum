@@ -22,6 +22,10 @@ func CreatePostHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Cannot get decode post body", http.StatusBadRequest)
 		return
 	}
+	if err := ValidatePost(postData); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+        return
+	}
 	if err := database.CreatePost(postData); err != nil {
 		http.Error(w, "Cannot create post", http.StatusInternalServerError)
 		return
