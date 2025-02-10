@@ -19,6 +19,10 @@ type User struct {
 }
 
 func LoginHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
 	var credentials struct {
 		Email    string `json:"email"`
 		Password string `json:"password"`
@@ -81,6 +85,10 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func LogoutHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
 	// Get user ID from context
 	userID, ok := middleware.GetUserID(r)
 	if !ok {
@@ -111,6 +119,10 @@ func LogoutHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func RegisterHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
 	var user User
 	err := json.NewDecoder(r.Body).Decode(&user)
 	if err != nil {

@@ -10,6 +10,10 @@ import (
 )
 
 func CreateCommentHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
 	// Get user ID from context
 	userID, ok := middleware.GetUserID(r)
 	if !ok {
@@ -38,6 +42,10 @@ func CreateCommentHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func CreateCommentLikeHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
 	userID, ok := middleware.GetUserID(r)
 	if !ok {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
