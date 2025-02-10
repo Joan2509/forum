@@ -223,11 +223,47 @@ function closeCreatePostModal() {
     document.getElementById('createPostForm').reset();
 }
 
+// post and title validation
+function validatePostForm(title, content) {
+    const errorDiv = document.getElementById('post-error-message');
+    
+    if (!title || title.trim() === '') {
+        showPostError('Please enter a post title');
+        return false;
+    }
+    
+    if (!content || content.trim() === '') {
+        showPostError('Please enter post content');
+        return false;
+    }
+    
+    errorDiv.style.display = 'none';
+    return true;
+}
+
+// Add this helper function for consistent error styling
+function showPostError(message) {
+    const errorDiv = document.getElementById('post-error-message');
+    errorDiv.innerHTML = `
+        <div class="error-content">
+            <i class="fas fa-exclamation-circle"></i>
+            <span>${message}</span>
+        </div>
+    `;
+    errorDiv.style.display = 'block';
+}
+
+// Modify the createPost function to include validation
 async function handleCreatePost(event) {
     event.preventDefault();
-
+    
     const title = document.getElementById('postTitle').value;
     const content = document.getElementById('postContent').value;
+ 
+    if (!validatePostForm(title, content)) {
+        return;
+    }
+    
     const selectedCategories = Array.from(document.querySelectorAll('#postCategories input:checked')).map(input => parseInt(input.value));
 
     try {
