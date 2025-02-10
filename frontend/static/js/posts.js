@@ -260,9 +260,9 @@ async function handleCreatePost(event) {
     const title = document.getElementById('postTitle').value;
     const content = document.getElementById('postContent').value;
  
-    if (!validatePostForm(title, content)) {
-        return;
-    }
+    // if (!validatePostForm(title, content)) {
+    //     return;
+    // }
     
     const selectedCategories = Array.from(document.querySelectorAll('#postCategories input:checked')).map(input => parseInt(input.value));
 
@@ -282,6 +282,10 @@ async function handleCreatePost(event) {
         closeCreatePostModal();
         resetPosts();
     } catch (e) {
+        if (e.message === 'title and content are required') {
+            showPostError('Title and content are required')
+            return
+        }
         handleError(e.message)
     }
 }
