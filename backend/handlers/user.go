@@ -72,8 +72,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		Value:    sessionToken,
 		Expires:  expiresAt,
 		Path:     "/",
-		HttpOnly: true,  
-		Secure:   true,  
+		HttpOnly: true, 
 		SameSite: http.SameSiteStrictMode,  
 	})
 
@@ -110,7 +109,6 @@ func LogoutHandler(w http.ResponseWriter, r *http.Request) {
 		Path:     "/",
 		Expires:  time.Unix(0, 0),
 		HttpOnly: true,
-		Secure:   true,
 		SameSite: http.SameSiteStrictMode,
 	})
 
