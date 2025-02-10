@@ -17,21 +17,21 @@ func CreatePostHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	userId, ok := middleware.GetUserID(r)
 	if !ok {
-		http.Error(w, "Unauthorized: No user ID", http.StatusUnauthorized)
+		errorMessage(w, "Unauthorized: No user ID", http.StatusUnauthorized)
 		return
 	}
 	var postData models.Post
 	postData.UserID = userId
 	if err := json.NewDecoder(r.Body).Decode(&postData); err != nil {
-		http.Error(w, "Cannot get decode post body", http.StatusBadRequest)
+		errorMessage(w, "Cannot get decode post body", http.StatusInternalServerError)
 		return
 	}
 	if err := ValidatePost(postData); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-        return
+		errorMessage(w, err.Error(), http.StatusBadRequest)
+		return
 	}
 	if err := database.CreatePost(postData); err != nil {
-		http.Error(w, "Cannot create post", http.StatusInternalServerError)
+		errorMessage(w, "cannot create post", http.StatusInternalServerError)
 		return
 	}
 	w.WriteHeader(http.StatusCreated)
@@ -42,7 +42,7 @@ func CreatePostHandler(w http.ResponseWriter, r *http.Request) {
 
 func GetPostsHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		errorMessage(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
 	// Get page from query parameters
@@ -61,7 +61,7 @@ func GetPostsHandler(w http.ResponseWriter, r *http.Request) {
 
 	posts, err := database.GetAllPosts(offset, filter, userID)
 	if err != nil {
-		http.Error(w, "Failed to fetch posts", http.StatusInternalServerError)
+		errorMessage(w, "Failed to fetch posts", http.StatusInternalServerError)
 		return
 	}
 
@@ -71,19 +71,19 @@ func GetPostsHandler(w http.ResponseWriter, r *http.Request) {
 
 func GetSinglePostHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		errorMessage(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
 	postID := r.URL.Path[len("/api/posts/"):]
 	id, err := strconv.Atoi(postID)
 	if err != nil {
-		http.Error(w, "Invalid post ID", http.StatusBadRequest)
+		errorMessage(w, "Invalid post ID", http.StatusBadRequest)
 		return
 	}
 
 	post, err := database.GetPostByID(id)
 	if err != nil {
-		http.Error(w, "Failed to fetch post", http.StatusInternalServerError)
+		errorMessage(w, "Failed to fetch post", http.StatusInternalServerError)
 		return
 	}
 
